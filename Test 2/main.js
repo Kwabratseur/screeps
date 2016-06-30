@@ -184,7 +184,7 @@ module.exports.loop = function () {
         if(remainder > 0){
             target = remainder;
         }
-        for(i = 0; i < 20; i++ ) {
+        for(i = 0; i < 30; i++ ) {
             cost = CreepCost(Layout);
             if((cost > target) || (cost > AvailableEnergy)){ break; }
             if(c > 2){ c = 0; }
@@ -238,7 +238,7 @@ module.exports.loop = function () {
         if(remainder > 0){
             target = remainder;
         }
-        for(i = 0; i < 14; i++ ) {
+        for(i = 0; i < 20; i++ ) {
             cost = CreepCost(Layout);
             if((cost > target) || (cost > AvailableEnergy)){ break; }
             if((i % 2) == 0){ Layout.push(HEAL); }
@@ -455,11 +455,13 @@ module.exports.loop = function () {
             Game.notify('A creep has been attacked in '+creep.pos.roomName+' at: '+creep.pos);
         }
         if(Creephit){
-            if(healer == undefined || healer.length < 2){
-                var newName = Game.spawns.Spawn1.createCreep(HealCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), undefined, {role: 'healer'});
+            if(healer == undefined || healer.length < 3){
+                var newName = Game.spawns.Spawn1.createCreep(HealCreep(Game.rooms[MyRoom].energyCapacityAvailable-200), undefined, {role: 'healer'});
                 console.log('Spawning new Healer, under attack!: ' + newName);
             }
             
+        }else if(Game.flags.Flag2 != undefined && healer == undefined){
+            var newName = Game.spawns.Spawn1.createCreep(HealCreep(Game.rooms[MyRoom].energyCapacityAvailable-200), undefined, {role: 'healer'});
         }
         if(creep.memory.role == 'healer'){
                 roleHealer.run(creep);

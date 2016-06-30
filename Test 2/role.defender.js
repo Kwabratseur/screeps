@@ -7,7 +7,7 @@ var roleDefender = {
             }
         else {
             if(Game.flags.Flag2 != undefined){
-                if(creep.pos.inRangeTo(Game.flags.Flag2,30)){
+                if(creep.pos.inRangeTo(Game.flags.Flag2,7)){
                     var hostiles = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
                     var hostileBuildings = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES);
                     if(hostiles != null){
