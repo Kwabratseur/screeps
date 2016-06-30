@@ -14,15 +14,6 @@ var roleClaimer = {
                 creep.moveTo(Game.flags.AttackController.pos);
             }
         }
-        else if(Game.flags.ClaimController != undefined){
-            if(creep.pos.inRangeTo(Game.flags.ClaimController,10)){ //ClaimController
-                if(creep.claimController(target) == ERR_NOT_IN_RANGE) { //CLAIM controller under your control.
-                    creep.moveTo(target);
-                }
-            }else{
-                creep.moveTo(Game.flags.ClaimController.pos);
-            }
-        }
         else if(Game.flags.ReserveController != undefined){
             if(creep.pos.inRangeTo(Game.flags.ReserveController,10)){ // ReserveController
                 if(creep.reserveController(target) == ERR_NOT_IN_RANGE) { //RESERVE controller with 1 tick per bodypart per tick executed.
@@ -32,6 +23,16 @@ var roleClaimer = {
                 creep.moveTo(Game.flags.ReserveController.pos);
             }
         }
+        else if(Game.flags.ClaimController != undefined){
+            if(creep.pos.inRangeTo(Game.flags.ClaimController,10)){ //ClaimController
+                if(creep.claimController(target) == ERR_NOT_IN_RANGE) { //CLAIM controller under your control.
+                    creep.moveTo(target);
+                }
+            }else{
+                creep.moveTo(Game.flags.ClaimController.pos);
+            }
+        }
+        
         else{
             creep.moveTo(Game.flags.Flag1.pos);
         }

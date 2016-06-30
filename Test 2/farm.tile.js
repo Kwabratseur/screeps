@@ -24,6 +24,7 @@ var farmTile = {
         var trucker = _.filter(Game.creeps, (creep) => (creep.memory.role == 'trucker') && (creep.memory.HarvestTile == TargetRoom.pos.roomName));
         var externalbuilder = _.filter(Game.creeps, (creep) => (creep.memory.role == 'externalbuilder') && (creep.memory.HarvestTile == TargetRoom.pos.roomName));
         var army = _.filter(Game.creeps, (creep) => (creep.memory.role == 'army') && (creep.memory.HarvestTile == TargetRoom.pos.roomName));
+        var Tno = 2;
         
         var farmerC = 0;
         //var Hostiles = Game.rooms[TargetRoom].find(FIND_HOSTILE_CREEPS);
@@ -39,19 +40,18 @@ var farmTile = {
                 
                 console.log('Spawning new farmer: ' + newName);
             }
-                
-            if(trucker.length < 2) {
-                var newName = SpawnName.createCreep(HarvestLayout, undefined, {role: 'trucker', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
-            console.log('Spawning new Trucker: ' + newName+ 'to truck goods from: '+TargetRoom);
-            }
             if(TargetRoom.room != undefined){
                 if(TargetRoom.room.find(FIND_CONSTRUCTION_SITES).length > 0){
-                    if(externalbuilder.length < 2) {
+                    if(externalbuilder.length < 3) {
                         var newName = SpawnName.createCreep(BuildLayout, undefined, {role: 'externalbuilder', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
                         console.log('dispatch builder' + newName+ 'to fix stuff in: '+TargetRoom);
                     }
-                    
+                Tno = 0;
                 }
+            }
+            if(trucker.length < Tno) {
+                var newName = SpawnName.createCreep(HarvestLayout, undefined, {role: 'trucker', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
+            console.log('Spawning new Trucker: ' + newName+ 'to truck goods from: '+TargetRoom);
             }
         }
         //console.log(TargetRoom.room.find(FIND_SOURCES).length);//Game.flags.FarmFlag.room.find(FIND_CONSTRUCTION_SITES);

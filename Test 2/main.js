@@ -305,7 +305,7 @@ module.exports.loop = function () {
             var Nharv = 2;
             var Nkill = 0;
             var NEMon = 0;
-            if(Memory.rooms[MyRoom].Level > 3){
+            if(Memory.rooms[MyRoom].Level < 3){
                 Nharv = 5;
                 Nwork = 3;
             }
@@ -407,7 +407,7 @@ module.exports.loop = function () {
             console.log('Spawning new EnergyManager: ' + newName);
         }
         
-        if((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)){
+        if(((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)) && claimer.length < 1){
 			var newName = Game.spawns[SpawnName].createCreep(ClaimCreep(0), undefined, {role: 'claimer'});
             console.log('Attack/Claim/Reserve Target Controller with creep: '+newName);
         }
@@ -449,7 +449,7 @@ module.exports.loop = function () {
         var EmonCounter = 0;
         for(var name in Game.creeps) {
             var creep = Game.creeps[name];
-            if(creep.memory.rol == 'claimer'){
+            if(creep.memory.role == 'claimer'){
 				roleClaimer.run(creep);
 			}
             if(creep.memory.Home == MyRoom){
