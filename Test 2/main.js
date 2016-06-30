@@ -7,7 +7,7 @@ var roomDefense = require('room.defense');
 var farmTile = require('farm.tile');
 var roleEnergyMon = require('role.energymon');
 var roleHealer = require('role.healer');
-
+var roleClaimer = require('role.claimer');
 
 
 
@@ -36,6 +36,7 @@ module.exports.loop = function () {
         var defender = _.filter(Game.creeps, (creep) => (creep.memory.role == 'defender') && (creep.memory.Home == MyRoom));
         var energymon = _.filter(Game.creeps, (creep) => (creep.memory.role == 'energymon') && (creep.memory.Home == MyRoom));
         var healer = _.filter(Game.creeps, (creep) => (creep.memory.role == 'healer') && (creep.memory.Home == MyRoom));
+        var claimer = _.filter(Game.creeps, (creep) => (creep.memory.role == 'claimer'));
         
         var SetupDefense = (function() {
         var executed = false;
@@ -50,16 +51,10 @@ module.exports.loop = function () {
         
             
         if(Game.rooms[MyRoom].memory.Level == undefined || Game.rooms[MyRoom].controller.level != Game.rooms[MyRoom].memory.Level){
-            if(Memory.rooms[MyRoom].Eticks == undefined){
-                Memory.rooms[MyRoom].Eticks = 3;
-            }
             Memory.rooms[MyRoom].Level = Game.rooms[MyRoom].controller.level;
             Game.notify('Room: '+MyRoom+' Just leveled up to'+Game.rooms[MyRoom].controller.level);
             console.log('Room: '+MyRoom+' Just leveled up to'+Game.rooms[MyRoom].controller.level);
-        }
-        
-        if(Memory.rooms[MyRoom].Eticks == 0 && Game.rooms[MyRoom].controller.level != Game.rooms[MyRoom].memory.Level){
-                Memory.rooms[MyRoom].Eticks = 3;
+            Memory.rooms[MyRoom].Eticks = 3;
         }
         
         if(Memory.rooms[MyRoom].Eticks > 0){
@@ -203,6 +198,31 @@ module.exports.loop = function () {
             return Layout;
         }
         
+        function ClaimCreep(remainder){
+            var Layout = [CLAIM,MOVE,CLAIM];
+            var cost = 0;
+            var target = AvailableEnergy;
+            var c = 0;
+            if(remainder != 0){
+                target = remainder;
+            }
+            for(i = 0; i < 5; i++ ) {
+                cost = CreepCost(Layout);
+
+                if((cost > target) || (cost > AvailableEnergy)){   
+                    Layout = Layout.slice(0,Layout.length-1); //**********CHANGED
+                    break; 
+                }
+                else{
+                if(c > 1){ c = 0; }
+                if(c == 0){ Layout.push(CLAIM); }
+                if(c == 1 && (i%3) == 1){ Layout.push(MOVE); } // this one will be added twice in a row of 9
+                c+=1;
+                }
+            }
+            return Layout;
+        }
+        
         function HealCreep(remainder){ //<<<<----!!! good way for building creeps with a for loop. This will scale them nicely if you know which parts are needed in which numbers
             var Layout = [HEAL,MOVE,HEAL];
             var cost = 0;
@@ -285,6 +305,10 @@ module.exports.loop = function () {
             var Nharv = 2;
             var Nkill = 0;
             var NEMon = 0;
+            if(Memory.rooms[MyRoom].Level > 3){
+                Nharv = 5;
+                Nwork = 3;
+            }
             if(linkFrom){
                     Nharv = 1;
             }
@@ -302,9 +326,7 @@ module.exports.loop = function () {
             if(Hostiles){
                         Nkill += 3;
                         }
-            }
-            
-                
+            }      
             return [Nbuil,Nupgr,Nwork,Nharv,Nkill,NEMon];
         }
         
@@ -385,7 +407,10 @@ module.exports.loop = function () {
             console.log('Spawning new EnergyManager: ' + newName);
         }
         
-    
+        if((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)){
+			var newName = Game.spawns[SpawnName].createCreep(ClaimCreep(0), undefined, {role: 'claimer'});
+            console.log('Attack/Claim/Reserve Target Controller with creep: '+newName);
+        }
         
         if(harvester.length < Nos[3]) {
             var newName = Game.spawns[SpawnName].createCreep(TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/4,12), undefined, {role: 'harvester',Home: MyRoom});
@@ -424,6 +449,9 @@ module.exports.loop = function () {
         var EmonCounter = 0;
         for(var name in Game.creeps) {
             var creep = Game.creeps[name];
+            if(creep.memory.rol == 'claimer'){
+				roleClaimer.run(creep);
+			}
             if(creep.memory.Home == MyRoom){
                 
                 var Sites = creep.room.find(FIND_CONSTRUCTION_SITES);
