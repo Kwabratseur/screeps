@@ -13,7 +13,8 @@ var roleBuilder = {
 	    if(creep.memory.building) {
 	        var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
             if(targets.length) {
-                if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage != undefined && _.sum(creep.room.storage.store) > BufferThreshold)) {
+                
+                if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
                     if(creep.build(targets[No]) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(targets[No]);
                     }

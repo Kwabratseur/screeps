@@ -14,7 +14,7 @@ var farmTile = {
 
     /** @param {Creep} creep **/
     //input: Game.flags.*FlagName*.room.roomname
-    run: function(TargetRoom, KillerLayout, WorkLayout, HarvestLayout,BuildLayout,clearRoom) {
+    run: function(TargetRoom,SpawnName, KillerLayout, WorkLayout, HarvestLayout,BuildLayout,clearRoom) {
         var roleFarmer = require('role.farmer');
         var roleTrucker = require('role.trucker');
         var roleArmy = require('role.army');
@@ -29,25 +29,25 @@ var farmTile = {
         //var Hostiles = Game.rooms[TargetRoom].find(FIND_HOSTILE_CREEPS);
         //var HostileBuildings = Game.rooms[TargetRoom].find(FIND_HOSTILE_STRUCTURES);
         
-        if(Game.spawns.Spawn1.room.energyAvailable > Game.spawns.Spawn1.room.energyCapacityAvailable*0.8){
+        if(SpawnName.room.energyAvailable > SpawnName.room.energyCapacityAvailable*0.8){
             if(army.length < 4 && clearRoom == true){
-                var newName = Game.spawns.Spawn1.createCreep(KillerLayout, undefined, {role: 'army', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
+                var newName = SpawnName.createCreep(KillerLayout, undefined, {role: 'army', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
             }
 
             if(farmer.length < 2 ) {
-                var newName = Game.spawns.Spawn1.createCreep(WorkLayout, undefined, {role: 'farmer', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
+                var newName = SpawnName.createCreep(WorkLayout, undefined, {role: 'farmer', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
                 
                 console.log('Spawning new farmer: ' + newName);
             }
                 
             if(trucker.length < 2) {
-                var newName = Game.spawns.Spawn1.createCreep(HarvestLayout, undefined, {role: 'trucker', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
+                var newName = SpawnName.createCreep(HarvestLayout, undefined, {role: 'trucker', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
             console.log('Spawning new Trucker: ' + newName+ 'to truck goods from: '+TargetRoom);
             }
             if(TargetRoom.room != undefined){
                 if(TargetRoom.room.find(FIND_CONSTRUCTION_SITES).length > 0){
                     if(externalbuilder.length < 2) {
-                        var newName = Game.spawns.Spawn1.createCreep(BuildLayout, undefined, {role: 'externalbuilder', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
+                        var newName = SpawnName.createCreep(BuildLayout, undefined, {role: 'externalbuilder', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
                         console.log('dispatch builder' + newName+ 'to fix stuff in: '+TargetRoom);
                     }
                     
@@ -58,7 +58,7 @@ var farmTile = {
         var FarmNo = 0;
         for(var name in Game.creeps) {
             var creep = Game.creeps[name];
-            if((creep.memory.HarvestTile == TargetRoom.pos.roomName) || (creep.room == Game.spawns.Spawn1.room)){
+            if((creep.memory.HarvestTile == TargetRoom.pos.roomName) || (creep.room == SpawnName.room)){
                 if(creep.pos.roomName == TargetRoom.pos.roomName){
                     var NoSources = TargetRoom.room.find(FIND_SOURCES).length;
                 }
