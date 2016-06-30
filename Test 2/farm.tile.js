@@ -42,7 +42,7 @@ var farmTile = {
             }
             if(TargetRoom.room != undefined){
                 if(TargetRoom.room.find(FIND_CONSTRUCTION_SITES).length > 0){
-                    if(externalbuilder.length < 3) {
+                    if(externalbuilder.length < 2) {
                         var newName = SpawnName.createCreep(BuildLayout, undefined, {role: 'externalbuilder', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
                         console.log('dispatch builder' + newName+ 'to fix stuff in: '+TargetRoom);
                     }

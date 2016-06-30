@@ -27,7 +27,7 @@ module.exports.loop = function () {
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
 		var SpawnName = name;
         var MyRoom = Game.spawns[SpawnName].room.name;    //Then offcourse make everything depend from variable MyRoom(mostly the case)
-    
+        //console.log('Room: '+MyRoom+'Spawn:'+name);
         
         var harvester = _.filter(Game.creeps, (creep) => (creep.memory.role == 'harvester') && (creep.memory.Home == MyRoom));
         var builder = _.filter(Game.creeps, (creep) => (creep.memory.role == 'builder') && (creep.memory.Home == MyRoom));
@@ -59,8 +59,8 @@ module.exports.loop = function () {
         
         if(Memory.rooms[MyRoom].Eticks > 0){
                 var Ecenter = Game.flags.EnergyCenter;
-                SetupDefense();
-                energyCenter(Ecenter);
+                //SetupDefense();
+                //energyCenter(Ecenter);
                 Memory.rooms[MyRoom].Eticks -= 1;
         }
 
@@ -88,24 +88,28 @@ module.exports.loop = function () {
             
         }
         
-        var AvailableEnergy = Game.rooms[MyRoom].energyAvailable;
+        var AvailableEnergy = 0;
+        var storages = 0;
+        var containers = 0;
+        var linkFrom = 0;
+        var linkTo = 0;
         
-        var storages = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
+        AvailableEnergy = Game.rooms[MyRoom].energyAvailable;
+        storages = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
                         filter: (structure) => {
                             return (structure.structureType == STRUCTURE_STORAGE );
                         }
                 });    
-    
-        var containers = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
+        containers = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
                         filter: (structure) => {
                             return (structure.structureType == STRUCTURE_CONTAINER );
                         }
                 });
     
         if(storages.length > 0){ // Make code look for links near sources and near storage/spawn and transfer from-links to the to-link
-            var linkFrom = Game.rooms[MyRoom].lookForAt('structure', 35, 40)[0];
+            linkFrom = Game.rooms[MyRoom].lookForAt('structure', 35, 40)[0];
             
-            var linkTo = Game.rooms[MyRoom].storage.pos.findInRange(FIND_MY_STRUCTURES, 2,
+            linkTo = Game.rooms[MyRoom].storage.pos.findInRange(FIND_MY_STRUCTURES, 2,
             {filter: {structureType: STRUCTURE_LINK}})[0];
             
             if(linkFrom.energy == linkFrom.energyCapacity && linkTo.energy == 0 && linkFrom.cooldown == 0){
@@ -195,6 +199,7 @@ module.exports.loop = function () {
                 Layout.push(CARRY);
                 Layout.push(CARRY);
     	    }
+    	    //console.log(linkFrom+' and room '+MyRoom);
             return Layout;
         }
         
@@ -306,7 +311,7 @@ module.exports.loop = function () {
             var Nkill = 0;
             var NEMon = 0;
             if(Memory.rooms[MyRoom].Level < 3){
-                Nharv = 5;
+                Nharv = 3;
                 Nwork = 3;
             }
             if(linkFrom){
@@ -404,37 +409,37 @@ module.exports.loop = function () {
     
         if(energymon.length < Nos[5]) {
             var newName = Game.spawns[SpawnName].createCreep(TransportCreep(0,10), undefined, {role: 'energymon',Home: MyRoom});
-            console.log('Spawning new EnergyManager: ' + newName);
+            console.log('Spawning new EnergyManager: ' + newName+ ' in room '+MyRoom);
         }
         
         if(((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)) && claimer.length < 1){
 			var newName = Game.spawns[SpawnName].createCreep(ClaimCreep(0), undefined, {role: 'claimer'});
-            console.log('Attack/Claim/Reserve Target Controller with creep: '+newName);
+            console.log('Attack/Claim/Reserve Target Controller with creep: '+newName+ ' in room '+MyRoom);
         }
         
         if(harvester.length < Nos[3]) {
             var newName = Game.spawns[SpawnName].createCreep(TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/4,12), undefined, {role: 'harvester',Home: MyRoom});
-            console.log('Spawning new harvester: ' + newName);
+            console.log('Spawning new harvester: ' + newName+ ' in room '+MyRoom);
         }
         
         if(worker.length < Nos[2]) {
             var newName = Game.spawns[SpawnName].createCreep(WorkCreep(0), undefined, {role: 'worker',Home: MyRoom});
-            console.log('Spawning new worker: ' + newName);
+            console.log('Spawning new worker: ' + newName+ ' in room '+MyRoom);
         }    
         
         if(defender.length < Nos[4] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
             var newName = Game.spawns[SpawnName].createCreep(ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/4), undefined, {role: 'defender',Home: MyRoom});
-            console.log('Spawning new defender: ' + newName);
+            console.log('Spawning new defender: ' + newName+ ' in room '+MyRoom);
         }
         
         if(builder.length < Nos[0] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
             var newName = Game.spawns[SpawnName].createCreep(BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), undefined, {role: 'builder',Home: MyRoom});
-            console.log('Spawning new builder: ' + newName);
+            console.log('Spawning new builder: ' + newName+ ' in room '+MyRoom);
         }
     
         if(upgrader.length < Nos[1] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
             var newName = Game.spawns[SpawnName].createCreep(BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), undefined, {role: 'upgrader',Home: MyRoom});
-            console.log('Spawning new upgrader: ' + newName);
+            console.log('Spawning new upgrader: ' + newName+ ' in room '+MyRoom);
         }
         
         
@@ -457,12 +462,12 @@ module.exports.loop = function () {
                 var Sites = creep.room.find(FIND_CONSTRUCTION_SITES);
                 if(creep.hits < creep.hitsMax){
                     Creephit = true;
-                    Game.notify('A creep has been attacked in '+creep.pos.roomName+' at: '+creep.pos);
+                    Game.notify('A creep has been attacked in '+creep.pos.roomName+' at: '+creep.pos+ ' in room '+MyRoom);
                 }
                 if(Creephit){
                     if(healer == undefined || healer.length < 3){
                         var newName = Game.spawns[SpawnName].createCreep(HealCreep(Game.rooms[MyRoom].energyCapacityAvailable-200), undefined, {role: 'healer',Home: MyRoom}); // <---- look for spawn in for loop and insert here with Game.spawns[SpawnName]
-                        console.log('Spawning new Healer, under attack!: ' + newName);
+                        console.log('Spawning new Healer, under attack!: ' + newName+ ' in room '+MyRoom);
                     }
                     
                 }else if(Game.flags.Flag2 != undefined && healer == undefined){
@@ -521,25 +526,29 @@ module.exports.loop = function () {
                 }
             }
         }
+        if(Game.flags.FarmFlag != undefined){
+            if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
+                farmTile.run(Game.flags.FarmFlag,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),false);
+                oneLoop = Game.cpu.getUsed() - startCpu;
+                startCpu = Game.cpu.getUsed();
+            }
+        }
         
+        if(Game.flags.FarmFlag2 != undefined){
+            if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
+                farmTile.run(Game.flags.FarmFlag2,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),false);
+                twoLoop = Game.cpu.getUsed() - startCpu;
+                startCpu = Game.cpu.getUsed();
+            }
+    
+         }
     }
     
     var MainLoop = Game.cpu.getUsed() - startCpu;
         startCpu = Game.cpu.getUsed();
         var oneLoop = 0;
         var twoLoop = 0;
-        if(Game.flags.FarmFlag != undefined){
-            farmTile.run(Game.flags.FarmFlag,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),false);
-            oneLoop = Game.cpu.getUsed() - startCpu;
-            startCpu = Game.cpu.getUsed();
-        }
-        
-        if(Game.flags.FarmFlag2 != undefined){
-            farmTile.run(Game.flags.FarmFlag2,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),false);
-            twoLoop = Game.cpu.getUsed() - startCpu;
-            startCpu = Game.cpu.getUsed();
-    
-         }
+
         var shortage = ((MainLoop+oneLoop+twoLoop)-Game.cpu.limit)
         if(shortage > 0){
             var message = 'CPU usage-limit='+shortage+'     - Main:'+MainLoop+ ' Farm1:'+oneLoop+' Farm2:'+twoLoop+' ; Bucket:'+Game.cpu.bucket+'; TickLimit:'+Game.cpu.tickLimit+' ;happened at tick: '+Game.time;

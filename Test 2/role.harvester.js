@@ -2,7 +2,7 @@ var roleHarvester = {
 
     /** @param {Creep} creep **/
     run: function(creep,No) {
-        var buildInfra = true;
+        var buildInfra = false;
 
         if(creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
             creep.memory.harvesting = false;
@@ -32,15 +32,21 @@ var roleHarvester = {
 	            }
 	        }
 	        if(_.sum(containers[k].store) != 0){
-	            if(_.sum(containers[No].store) < 200){
+	            if(_.sum(containers[k].store) > 200){
 	                No = k;
 	            }
-	            if(containers[No].transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-	                creep.moveTo(containers[No], {reusePath: 40});
-	                
-	            }else{
-	                containers[No].transfer(creep,RESOURCE_ENERGY);
-	            }
+	            if(containers[No] != undefined){
+    	            if(containers[No].transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+    	                creep.moveTo(containers[No], {reusePath: 40});
+    	                
+    	            }else{
+    	                containers[k].transfer(creep,RESOURCE_ENERGY);
+    	            }
+    	        }else if(drops.length>0){
+    	            creep.moveTo(drops[0]);
+    	            creep.pickup(drops[0]);
+    	        }
+	            
 	        }else if(drops.length>0){
     	            creep.moveTo(drops[0]);
     	            creep.pickup(drops[0]);
