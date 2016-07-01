@@ -10,36 +10,14 @@ The number of creeps is mostly based on the buildings in the room, so automating
 
 I'm only Control level 5 and GCL 2 so the code is working with all buildings up to this point. Multiple rooms with spawns can't be handled yet.
 
-Todo's:
-
-* Cleanup code
-* MORE optimization!
-* Main script working with multiple rooms with spawns 
-
-* Improvements:
-   -   Create and add build scripts
-       * if control level == up -> add possible structures
-       * add extensions at BaseFlag location (added once)   ***DONE*** (EnergyCenter)
-       * if control level == up again -> logically continue with grid ***DONE***
-       * Buildings: Extensions, Roads, storages, container should be taken into account here
-
-   -   create and add Link scripts ***COMPLETED***
-       * can be used to fill structures/transport energy from range within same room
-
-   -   improve defense script ***DONE***
-       * also triggered when control level == up ***DONE***
-       * OR if defenses are destroyed 
-       * Also include the Tower placement here
-
-   -   Add Automatic Repair sequence
-       * max hits in ramparts and walls are scaled up with control level 
-       * ALWAYS repair the weakest link first, so sort from most damaged to least damaged ***DONE***
-       * Keep in mind that this costs a lot of energy initially! so start SERIOUSLY repairing from control level 4       
-
-   - control level == up should be done with room.memory ***DONE***
-
-   - also add for loop, looping through rooms with spawns ***DONE***
-
-   - Test all this in simulation ofc!
-
-   - Add list of flags with given function and routine which places mandatory flags or just to anoy neigbours/autofarm
+List of Flags:
+ - Flag1 - Mandatory, inactive Healers/Defenders/Claimers are sent here.
+ - Flag2 - Optional, Attack marker, Defenders/Healers are dispatched here and destroy everything within 10 squares.
+ - Flag3 - Mandatory, inactive builders/upgraders/harvesters are sent here when they are not allowed to pick-up or drop energy
+ - FarmFlag/FarmFlag2 - Optional, Dispatch farmers + truckers to farm and transport energy from this room. 
+                      - When constructionsites are detected, truckers are not dispatched but builders, they use the resources to build.
+                      - There is a ClearRoom variable in farm.tile which sends an army to defend your creeps/ clear the room.
+ - AttackController/ClaimController/ReserveController - Optional, place this in the room where you want to dispatch claimers with the flagname goal. Claimers are created when the flags are detected.
+ - EnergyCenter - Experimental, Place this in a free area of 9x - 11y, a road-grid will be generated and extensions.
+                - needs further improvement.
+ - All these functions will be replaced with similar names but in flag memory, this allows of defining multiple goals in different rooms. For now, the flags are the same for all rooms.
