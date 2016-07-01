@@ -199,6 +199,7 @@ module.exports.loop = function () {
                 Layout.push(CARRY);
                 Layout.push(CARRY);
     	    }
+    	    //console.log(Layout);
     	    //console.log(linkFrom+' and room '+MyRoom);
             return Layout;
         }
@@ -310,9 +311,9 @@ module.exports.loop = function () {
             var Nharv = 2;
             var Nkill = 0;
             var NEMon = 0;
-            if(Memory.rooms[MyRoom].Level < 3){
-                Nharv = 3;
-                Nwork = 3;
+            if(Game.rooms[MyRoom].energyCapacityAvailable < 600){
+                Nharv = 4;
+                Nbuil = 4;
             }
             if(linkFrom){
                     Nharv = 1;
@@ -361,11 +362,19 @@ module.exports.loop = function () {
         });
         
         if(towers.length > 0){
+            var WallHp = 0.00001;
+            var RampHp = 0.01;
+            var RoadHp = 0.7;
+            if(towers[0].room.controller.level > 3){
+                WallHp = 0.0003;
+                RampHp = 0.01;
+                RoadHp = 0.9;
+            }
             var mostbadlydamaged = towers[0].room.find(FIND_STRUCTURES, {
                         filter: (structure) => {
-                                        return ((structure.structureType == STRUCTURE_WALL&& structure.hits < structure.hitsMax*0.0003 ||
-                                                 structure.structureType == STRUCTURE_RAMPART && structure.hits < structure.hitsMax*0.01 ||
-                                                 (structure.structureType == STRUCTURE_ROAD && structure.hits < structure.hitsMax*0.9) ||
+                                        return ((structure.structureType == STRUCTURE_WALL&& structure.hits < structure.hitsMax*WallHp ||
+                                                 structure.structureType == STRUCTURE_RAMPART && structure.hits < structure.hitsMax*RampHp ||
+                                                 (structure.structureType == STRUCTURE_ROAD && structure.hits < structure.hitsMax*RoadHp) ||
                                                  structure.structureType == STRUCTURE_CONTAINER)&& structure.hits < structure.hitsMax);
                                     }
                     });
@@ -388,9 +397,9 @@ module.exports.loop = function () {
     
                     var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                         filter: (structure) => {
-                                        return ((structure.structureType == STRUCTURE_WALL&& structure.hits < structure.hitsMax*0.0003 ||
-                                                 structure.structureType == STRUCTURE_RAMPART && structure.hits < structure.hitsMax*0.01 ||
-                                                 (structure.structureType == STRUCTURE_ROAD && structure.hits < structure.hitsMax*0.9) ||
+                                        return ((structure.structureType == STRUCTURE_WALL&& structure.hits < structure.hitsMax*WallHp ||
+                                                 structure.structureType == STRUCTURE_RAMPART && structure.hits < structure.hitsMax*RampHp ||
+                                                 (structure.structureType == STRUCTURE_ROAD && structure.hits < structure.hitsMax*RoadHp) ||
                                                  structure.structureType == STRUCTURE_CONTAINER)&& structure.hits < structure.hitsMax);
                                     }
                     });
@@ -431,10 +440,17 @@ module.exports.loop = function () {
             var newName = Game.spawns[SpawnName].createCreep(ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/4), undefined, {role: 'defender',Home: MyRoom});
             console.log('Spawning new defender: ' + newName+ ' in room '+MyRoom);
         }
-        
-        if(builder.length < Nos[0] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
-            var newName = Game.spawns[SpawnName].createCreep(BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), undefined, {role: 'builder',Home: MyRoom});
-            console.log('Spawning new builder: ' + newName+ ' in room '+MyRoom);
+        if(Game.rooms[MyRoom].energyCapacityAvailable < 800){
+            
+            if(builder.length < Nos[0] && harvester.length >= Nos[3] && worker.length >= Nos[2] ) {
+                var newName = Game.spawns[SpawnName].createCreep(BuildCreep(0), undefined, {role: 'builder',Home: MyRoom});
+                console.log('Spawning new builder: ' + newName+ ' in room '+MyRoom);
+            }
+        }else{
+            if(builder.length < Nos[0] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
+                var newName = Game.spawns[SpawnName].createCreep(BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), undefined, {role: 'builder',Home: MyRoom});
+                console.log('Spawning new builder: ' + newName+ ' in room '+MyRoom);
+            }
         }
     
         if(upgrader.length < Nos[1] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
@@ -498,7 +514,7 @@ module.exports.loop = function () {
                     roleDefender.run(creep,hostiles);
                 }
                 if(creep.memory.role == 'builder') {
-                    roleBuilder.run(creep,AvailableEnergy,0);
+                    roleBuilder.run(creep,AvailableEnergy,BuildCounter);
                     BuildCounter +=1;
                 }
                 if(creep.memory.role == 'worker') {

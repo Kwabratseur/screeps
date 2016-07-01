@@ -32,7 +32,7 @@ var roleHarvester = {
 	            }
 	        }
 	        if(_.sum(containers[k].store) != 0){
-	            if(_.sum(containers[k].store) > 200){
+	            if(containers[No] != undefined && _.sum(containers[No].store) < 200){
 	                No = k;
 	            }
 	            if(containers[No] != undefined){
