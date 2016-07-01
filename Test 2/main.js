@@ -490,8 +490,6 @@ module.exports.loop = function () {
                         console.log('Spawning new Healer, under attack!: ' + newName+ ' in room '+MyRoom);
                     }
                     
-                }else if(Game.flags.Flag2 != undefined && healer == undefined){
-                    var newName = Game.spawns[SpawnName].createCreep(HealCreep(Game.rooms[MyRoom].energyCapacityAvailable-200), undefined, {role: 'healer',Home: MyRoom});	// <---- look for spawn in for loop and insert here with Game.spawns[SpawnName]
                 }
                 if(creep.memory.role == 'healer'){
                         roleHealer.run(creep);
