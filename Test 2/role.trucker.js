@@ -30,12 +30,21 @@ var roleTrucker = {
 	    }
         
         else {//
-            var targets = Game.spawns.Spawn1.room.find(FIND_STRUCTURES, {
+            
+            var RoomVar = 0;
+            for(var name in Game.spawns){
+        		var SpawnName = name;
+        		var CurrentRoom = Game.spawns[SpawnName].room;
+        		if(RoomVar == 0 || CurrentRoom.energyAvailable/CurrentRoom.energyCapacityAvailable < Game.rooms[RoomVar].energyAvailable/Game.rooms[RoomVar].energyCapacityAvailable){
+        		    RoomVar = Game.spawns[SpawnName].room.name;
+        		}
+            }
+
+            var targets = Game.rooms[RoomVar].find(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (structure.structureType == STRUCTURE_STORAGE);
                     }
             });
-            if(targets.length > 0) {
                 if(buildInfra == true){
                     var Road = false;
                     var Site = false;
@@ -52,8 +61,8 @@ var roleTrucker = {
                                             }
                         });
                 }
-                if(Game.spawns.Spawn1.room.energyAvailable < 600){
-                    var targets = Game.spawns.Spawn1.room.find(FIND_STRUCTURES, {
+                if(targets == ""){
+                    targets = Game.rooms[RoomVar].find(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (structure.structureType == STRUCTURE_EXTENSION ||
                                 structure.structureType == STRUCTURE_SPAWN ||
@@ -61,7 +70,7 @@ var roleTrucker = {
                     }
                 });
                 if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0], {reusePath: 5});
+                    creep.moveTo(targets[0], {reusePath: 2});
                 }
                 }else{
                     if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -85,7 +94,6 @@ var roleTrucker = {
                         Game.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
                         
                     }*/
-            }
         }
 	}
 };

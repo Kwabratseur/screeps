@@ -28,6 +28,7 @@ module.exports.loop = function () {
 		var SpawnName = name;
         var MyRoom = Game.spawns[SpawnName].room.name;    //Then offcourse make everything depend from variable MyRoom(mostly the case)
         //console.log('Room: '+MyRoom+'Spawn:'+name);
+        //console.log('Room: '+Game.rooms[MyRoom].controller.my);
         
         var harvester = _.filter(Game.creeps, (creep) => (creep.memory.role == 'harvester') && (creep.memory.Home == MyRoom));
         var builder = _.filter(Game.creeps, (creep) => (creep.memory.role == 'builder') && (creep.memory.Home == MyRoom));
@@ -311,9 +312,12 @@ module.exports.loop = function () {
             var Nharv = 2;
             var Nkill = 0;
             var NEMon = 0;
+            if(Game.rooms[MyRoom].controller.level < 3){
+                Nupgr = 4;
+            }
             if(Game.rooms[MyRoom].energyCapacityAvailable < 600){
-                Nharv = 4;
-                Nbuil = 4;
+                Nharv = 3;
+                Nbuil = 3;
             }
             if(linkFrom){
                     Nharv = 1;
@@ -421,7 +425,7 @@ module.exports.loop = function () {
             console.log('Spawning new EnergyManager: ' + newName+ ' in room '+MyRoom);
         }
         
-        if(((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)) && claimer.length < 1){
+        if(((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)) && claimer.length < 1 && Game.rooms[MyRoom].energyCapacityAvailable > 1200){
 			var newName = Game.spawns[SpawnName].createCreep(ClaimCreep(0), undefined, {role: 'claimer'});
             console.log('Attack/Claim/Reserve Target Controller with creep: '+newName+ ' in room '+MyRoom);
         }

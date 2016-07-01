@@ -49,12 +49,12 @@ var roleBuilder = {
                         }
                 });
                 if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
-                    if(No == 0){
-                        if(NoDamaged.length > numberDamaged){
+                    if(No == 0 && NoDamaged.length > numberDamaged){
+                        //if(NoDamaged.length > numberDamaged){
                             if(creep.repair(ClosestDamagedStructure) == ERR_NOT_IN_RANGE) {
                                 creep.moveTo(ClosestDamagedStructure);
                             }
-                        }
+                        //}
                     }else{
                         if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
                             creep.moveTo(creep.room.controller);
@@ -69,7 +69,7 @@ var roleBuilder = {
 	    }
 	    
 	    else {
-	        if(Game.flags.Dismantle != undefined){
+	        if(Game.flags.Dismantle != undefined && No == 0){
 	            if(creep.pos.inRangeTo(Game.flags.Dismantle,6)){
 	            var target = creep.pos.findClosestByRange(FIND_STRUCTURES);
                     if(target) {

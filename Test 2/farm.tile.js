@@ -29,21 +29,31 @@ var farmTile = {
         var farmerC = 0;
         //var Hostiles = Game.rooms[TargetRoom].find(FIND_HOSTILE_CREEPS);
         //var HostileBuildings = Game.rooms[TargetRoom].find(FIND_HOSTILE_STRUCTURES);
+        //console.log(TargetRoom.room.controller.reservation.ticksToEnd);
+        //console.log();
+        
+        if(TargetRoom.room.controller.reservation.username == 'Kwabratseur'){
+            
+            Tno = 4;
+        }
         
         if(SpawnName.room.energyAvailable > SpawnName.room.energyCapacityAvailable*0.8){
             if(army.length < 4 && clearRoom == true){
                 var newName = SpawnName.createCreep(KillerLayout, undefined, {role: 'army', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
+                console.log('Spawning new warrior: ' + newName+' for: '+TargetRoom);
             }
 
             if(farmer.length < 2 ) {
                 var newName = SpawnName.createCreep(WorkLayout, undefined, {role: 'farmer', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
                 
-                console.log('Spawning new farmer: ' + newName);
+                console.log('Spawning new farmer: ' + newName+' for: '+TargetRoom);
             }
             if(TargetRoom.room != undefined){
                 if(TargetRoom.room.find(FIND_CONSTRUCTION_SITES).length > 0){
                     if(externalbuilder.length < 2) {
                         var newName = SpawnName.createCreep(BuildLayout, undefined, {role: 'externalbuilder', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
+                        console.log('Room '+TargetRoom.pos.roomName+' is reserved for: '+TargetRoom.room.controller.reservation.ticksToEnd+' ticks');
+                        Game.notify('Room '+TargetRoom.pos.roomName+' is reserved for: '+TargetRoom.room.controller.reservation.ticksToEnd+' ticks',720);
                         console.log('dispatch builder' + newName+ 'to fix stuff in: '+TargetRoom);
                     }
                 Tno = 0;
