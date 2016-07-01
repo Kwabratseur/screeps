@@ -32,7 +32,7 @@ var farmTile = {
         //console.log(TargetRoom.room.controller.reservation.ticksToEnd);
         //console.log();
         
-        if(TargetRoom != undefined && TargetRoom.room.controller.reservation.username == 'Kwabratseur'){
+        if(TargetRoom.room != undefined && TargetRoom.room.controller.reservation.username == 'Kwabratseur'){
             
             Tno = 4;
         }
