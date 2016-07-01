@@ -23,4 +23,5 @@ List of Flags:
  - AttackController/ClaimController/ReserveController - Optional, place this in the room where you want to dispatch claimers with the flagname goal. Claimers are created when the flags are detected.
  - EnergyCenter - Experimental, Place this in a free area of 9x - 11y, a road-grid will be generated and extensions.
                 - needs further improvement.
+ - Dismantle - Dispatches all builders to the area of the flag and dismantle all buildings in a range around the flag.
  - All these functions will be replaced with similar names but in flag memory, this allows of defining multiple goals in different rooms. For now, the flags are the same for all rooms.
