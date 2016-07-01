@@ -319,6 +319,9 @@ module.exports.loop = function () {
                 Nharv = 3;
                 Nbuil = 3;
             }
+            if(storages.length > 0){
+                NEMon = 2;
+            }
             if(linkFrom){
                     Nharv = 1;
             }
@@ -327,9 +330,7 @@ module.exports.loop = function () {
                //Nwork = 4;
                Nupgr = 2;
                Nkill = 1;
-               if(storages.length > 0){
-                   NEMon = 2;
-               }
+               
                if(Game.flags.Flag2 != undefined){
                    Nkill += 4;
                }
@@ -420,10 +421,7 @@ module.exports.loop = function () {
             }
         }
     
-        if(energymon.length < Nos[5]) {
-            var newName = Game.spawns[SpawnName].createCreep(TransportCreep(0,10), undefined, {role: 'energymon',Home: MyRoom});
-            console.log('Spawning new EnergyManager: ' + newName+ ' in room '+MyRoom);
-        }
+        
         
         if(((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)) && claimer.length < 1 && Game.rooms[MyRoom].energyCapacityAvailable > 1200){
 			var newName = Game.spawns[SpawnName].createCreep(ClaimCreep(0), undefined, {role: 'claimer'});
@@ -431,14 +429,19 @@ module.exports.loop = function () {
         }
         
         if(harvester.length < Nos[3]) {
-            var newName = Game.spawns[SpawnName].createCreep(TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/4,12), undefined, {role: 'harvester',Home: MyRoom});
+            var newName = Game.spawns[SpawnName].createCreep(TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,12), undefined, {role: 'harvester',Home: MyRoom});
             console.log('Spawning new harvester: ' + newName+ ' in room '+MyRoom);
         }
         
         if(worker.length < Nos[2]) {
             var newName = Game.spawns[SpawnName].createCreep(WorkCreep(0), undefined, {role: 'worker',Home: MyRoom});
             console.log('Spawning new worker: ' + newName+ ' in room '+MyRoom);
-        }    
+        } 
+        
+        if(energymon.length < Nos[5]) {
+            var newName = Game.spawns[SpawnName].createCreep(TransportCreep(0,10), undefined, {role: 'energymon',Home: MyRoom});
+            console.log('Spawning new EnergyManager: ' + newName+ ' in room '+MyRoom);
+        }
         
         if(defender.length < Nos[4] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
             var newName = Game.spawns[SpawnName].createCreep(ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/4), undefined, {role: 'defender',Home: MyRoom});
