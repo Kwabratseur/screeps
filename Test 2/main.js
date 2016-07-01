@@ -106,7 +106,9 @@ module.exports.loop = function () {
                             return (structure.structureType == STRUCTURE_CONTAINER );
                         }
                 });
-    
+        
+        //console.log(_.sum(storages[0].store));
+        
         if(storages.length > 0){ // Make code look for links near sources and near storage/spawn and transfer from-links to the to-link
             linkFrom = Game.rooms[MyRoom].lookForAt('structure', 35, 40)[0];
             
@@ -321,16 +323,15 @@ module.exports.loop = function () {
             }
             if(storages.length > 0){
                 NEMon = 2;
+                if(_.sum(storages[0].store) > 60000){
+                    Nupgr += Math.round((_.sum(storages[0].store)-60000)/10000)
+                }
             }
             if(linkFrom){
                     Nharv = 1;
             }
-            if(buil >= Nbuil && upgr >= Nupgr && work >= Nwork && harv >= Nharv && AvailableEnergy > (Game.rooms[MyRoom].energyCapacityAvailable-300)) {
-               //Nharv = 3;
-               //Nwork = 4;
-               Nupgr = 2;
+            if(buil >= Nbuil && work >= Nwork && harv >= Nharv && AvailableEnergy > (Game.rooms[MyRoom].energyCapacityAvailable-300)) {
                Nkill = 1;
-               
                if(Game.flags.Flag2 != undefined){
                    Nkill += 4;
                }
