@@ -119,7 +119,7 @@ module.exports.loop = function () {
         
     
     
-        var hostiles = ""//Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        var hostiles = Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         
         var healer = Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS, {  // <-----------------------that's how we find stuff in the room, check code for occurance.
                         filter: function(object) {
