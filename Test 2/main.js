@@ -1,5 +1,5 @@
-var profiler = require('screeps-profiler');
 var startCpu = Game.cpu.getUsed();
+var profiler = require('screeps-profiler');
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -10,6 +10,7 @@ var farmTile = require('farm.tile');
 var roleEnergyMon = require('role.energymon');
 var roleHealer = require('role.healer');
 var roleClaimer = require('role.claimer');
+
 
 //use profiler with Game.profiler.profile(ticks) || .email || .stream
 profiler.enable();
@@ -113,9 +114,7 @@ module.exports.loop = function () {
                             return (structure.structureType == STRUCTURE_CONTAINER );
                         }
                 });
-        
-        //console.log(_.sum(storages[0].store));
-        
+
         //var linktest = Game.rooms[MyRoom].find(FIND_MY_STRUCTURES, // testvar for fixing bug with link detection when storages are present.
         //    {filter: {structureType: STRUCTURE_LINK}})[0]; // put the array in the variable!
         //console.log(linktest);
@@ -591,10 +590,11 @@ module.exports.loop = function () {
             }
         }
         if(Game.flags.FarmFlag != undefined){
+            startCpu = Game.cpu.getUsed();
             if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
                 farmTile.run(Game.flags.FarmFlag,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),false);
                 oneLoop = Game.cpu.getUsed() - startCpu;
-                startCpu = Game.cpu.getUsed();
+                
             }
         }
         
@@ -602,14 +602,15 @@ module.exports.loop = function () {
             if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
                 farmTile.run(Game.flags.FarmFlag2,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),false);
                 twoLoop = Game.cpu.getUsed() - startCpu;
-                startCpu = Game.cpu.getUsed();
             }
     
          }
     }
+    
     //Game.profiler.email(1800);
     //Game.profiler.profile(10);
-    var MainLoop = Game.cpu.getUsed() - startCpu;
+    
+    var MainLoop = Game.cpu.getUsed();
         if(!Memory.CpuStats){
             Memory.CpuStats = {
                 TickCounter: 0,
@@ -629,8 +630,7 @@ module.exports.loop = function () {
         Memory.CpuStats.TickCounter += 1;
         var oneLoop = 0;
         var twoLoop = 0;
-
-        var shortage = ((MainLoop+oneLoop+twoLoop)-Game.cpu.limit)
+        var shortage = MainLoop-Game.cpu.limit
         if(shortage > 0){
             var message = 'CPU usage-limit='+shortage+'     - Main:'+MainLoop+ ' Farm1:'+oneLoop+' Farm2:'+twoLoop+' ; Bucket:'+Game.cpu.bucket+'; TickLimit:'+Game.cpu.tickLimit+' ;happened at tick: '+Game.time;
             console.log(message);

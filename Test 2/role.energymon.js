@@ -29,8 +29,10 @@ var roleEnergyMon = {
                         return (structure.structureType == STRUCTURE_STORAGE && _.sum(structure.store) > 0) ;
                     }
             });
-        var link = storages[0].pos.findInRange(FIND_MY_STRUCTURES, 2,
-            {filter: {structureType: STRUCTURE_LINK}})[0];
+        if(storages[0] != undefined){
+            var link = storages[0].pos.findInRange(FIND_MY_STRUCTURES, 2,
+                {filter: {structureType: STRUCTURE_LINK}})[0]
+        }
 
         //same here, link.length will return 0 because ^^^ element No. 0 is taken. (first result of findInRange)
         if(link != undefined && link.energy > 0 && No == 0){
