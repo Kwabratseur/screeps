@@ -1,3 +1,5 @@
+var profiler = require('screeps-profiler');
+var startCpu = Game.cpu.getUsed();
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -9,11 +11,11 @@ var roleEnergyMon = require('role.energymon');
 var roleHealer = require('role.healer');
 var roleClaimer = require('role.claimer');
 
-
-
+//use profiler with Game.profiler.profile(ticks) || .email || .stream
+profiler.enable();
 module.exports.loop = function () {
-
-    
+    profiler.wrap(function() {
+    var LogLength = 20;
     //var MyRoom = Game.spawns.Spawn1.room.name;
     
     for(var name in Memory.creeps) {
@@ -22,7 +24,7 @@ module.exports.loop = function () {
         }
     }
     
-    var startCpu = Game.cpu.getUsed();
+    
     
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
 		var SpawnName = name;
@@ -605,9 +607,26 @@ module.exports.loop = function () {
     
          }
     }
-    
+    //Game.profiler.email(1800);
+    //Game.profiler.profile(10);
     var MainLoop = Game.cpu.getUsed() - startCpu;
-        startCpu = Game.cpu.getUsed();
+        if(!Memory.CpuStats){
+            Memory.CpuStats = {
+                TickCounter: 0,
+                AggregatedAverage: MainLoop,
+                
+            }
+        }
+        if(Memory.CpuStats.TickCounter > LogLength){
+            console.log('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.')
+            Memory.CpuStats.TickCounter = 0;
+            Memory.CpuStats.AggregatedAverage = MainLoop;
+            Game.profiler.profile(5);
+        }else{
+            Memory.CpuStats.AggregatedAverage = (Memory.CpuStats.AggregatedAverage + MainLoop)/2
+            
+        }
+        Memory.CpuStats.TickCounter += 1;
         var oneLoop = 0;
         var twoLoop = 0;
 
@@ -617,6 +636,8 @@ module.exports.loop = function () {
             console.log(message);
             Game.notify(message, 720);
         }else{
-            console.log('TickTime: '+Game.time+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
+            console.log('TickTime: '+Game.time+' ;Used CPU: '+MainLoop+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
         }
+    });
+    //Game.profiler.profile(10);
 }
