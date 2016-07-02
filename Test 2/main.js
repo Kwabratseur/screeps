@@ -27,6 +27,12 @@ module.exports.loop = function () {
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
 		var SpawnName = name;
         var MyRoom = Game.spawns[SpawnName].room.name;    //Then offcourse make everything depend from variable MyRoom(mostly the case)
+        var sources = Game.rooms[MyRoom].find(FIND_SOURCES);
+        
+        var towers = Game.rooms[MyRoom].find(FIND_MY_STRUCTURES, {
+        filter: { structureType: STRUCTURE_TOWER }
+        });
+        
         //console.log('Room: '+MyRoom+'Spawn:'+name);
         //console.log('Room: '+Game.rooms[MyRoom].controller.my);
         
@@ -92,8 +98,7 @@ module.exports.loop = function () {
         var AvailableEnergy = 0;
         var storages = 0;
         var containers = 0;
-        var linkFrom = 0;
-        var linkTo = 0;
+
         
         AvailableEnergy = Game.rooms[MyRoom].energyAvailable;
         storages = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
@@ -110,13 +115,46 @@ module.exports.loop = function () {
         //console.log(_.sum(storages[0].store));
         
         if(storages.length > 0){ // Make code look for links near sources and near storage/spawn and transfer from-links to the to-link
-            linkFrom = Game.rooms[MyRoom].lookForAt('structure', 35, 40)[0];
             
-            linkTo = Game.rooms[MyRoom].storage.pos.findInRange(FIND_MY_STRUCTURES, 2,
+            var linkFrom = 0;
+            var linkController = 0;
+            var linkTower = 0;
+            
+            var linkTo = Game.rooms[MyRoom].storage.pos.findInRange(FIND_MY_STRUCTURES, 2,
             {filter: {structureType: STRUCTURE_LINK}})[0];
             
-            if(linkFrom.energy == linkFrom.energyCapacity && linkTo.energy == 0 && linkFrom.cooldown == 0){
-                linkFrom.transferEnergy(linkTo);
+            for(id in sources){ // Look for link near sources
+                var linkTemp = sources[id].pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
+                
+                if(linkTemp.length > 0){
+                    linkFrom = linkTemp[0];
+                } // if link is found near a source, designate it as a linkFrom
+            }
+            
+            if(Game.rooms[MyRoom].controller.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}})){ //look for link near controller
+                linkController = Game.rooms[MyRoom].controller.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
+            }
+            
+            if(towers.length > 0){  //look for links near towers
+                 for(var id in towers){
+                    var linkTemp = towers[id].pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
+                    if(linkTemp.length > 0){
+                        linkTower = linkTemp[0];
+                    }
+                     
+                 }
+            }
+            
+            //linkTo.pos etc. has been used because this returns undefined. Because the zero'th element is chosen (LinkTemp[0]), length will always return 0.
+            if(linkTo.pos != undefined){ //if controller || tower links are defined and empty, prioritize them over the storage link.
+                if(linkController.pos != undefined && linkController.energy == 0){
+                    linkTo = LinkController
+                }else if(linkTower.pos != undefined && linkTower.energy == 0){
+                    linkTo = linkTower;
+                }
+                if(linkFrom.energy == linkFrom.energyCapacity && linkTo.energy == 0 && linkFrom.cooldown == 0){
+                    linkFrom.transferEnergy(linkTo); //then send the energy
+                }
             }
         }
         
@@ -202,8 +240,6 @@ module.exports.loop = function () {
                 Layout.push(CARRY);
                 Layout.push(CARRY);
     	    }
-    	    //console.log(Layout);
-    	    //console.log(linkFrom+' and room '+MyRoom);
             return Layout;
         }
         
@@ -363,9 +399,7 @@ module.exports.loop = function () {
             return cost;
         }
         
-        var towers = Game.rooms[MyRoom].find(FIND_MY_STRUCTURES, {
-        filter: { structureType: STRUCTURE_TOWER }
-        });
+        
         
         if(towers.length > 0){
             var WallHp = 0.00001;
@@ -524,7 +558,6 @@ module.exports.loop = function () {
                     BuildCounter +=1;
                 }
                 if(creep.memory.role == 'worker') {
-                    var sources = creep.room.find(FIND_SOURCES);
                     SourceToggle = Math.abs(SourceToggle - 1);
                     if(AmountWorkMain < 5){
                         creep.memory.sourceID = sources[SourceToggle].id;
