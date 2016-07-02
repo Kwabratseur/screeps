@@ -113,10 +113,10 @@ module.exports.loop = function () {
                 });
         
         //console.log(_.sum(storages[0].store));
-        
+        var linkFrom = 0;
         if(storages.length > 0){ // Make code look for links near sources and near storage/spawn and transfer from-links to the to-link
             
-            var linkFrom = 0;
+            
             var linkController = 0;
             var linkTower = 0;
             
@@ -350,7 +350,7 @@ module.exports.loop = function () {
             var Nharv = 2;
             var Nkill = 0;
             var NEMon = 0;
-            if(Game.rooms[MyRoom].controller.level < 3){
+            if(Game.rooms[MyRoom].controller.level < 4){
                 Nupgr = 4;
             }
             if(Game.rooms[MyRoom].energyCapacityAvailable < 600){
@@ -363,7 +363,7 @@ module.exports.loop = function () {
                     Nupgr += Math.round((_.sum(storages[0].store)-60000)/10000)
                 }
             }
-            if(linkFrom){
+            if(linkFrom.pos != undefined){
                     Nharv = 1;
             }
             if(buil >= Nbuil && work >= Nwork && harv >= Nharv && AvailableEnergy > (Game.rooms[MyRoom].energyCapacityAvailable-300)) {
