@@ -113,9 +113,16 @@ module.exports.loop = function () {
                 });
         
         //console.log(_.sum(storages[0].store));
+        
+        //var linktest = Game.rooms[MyRoom].find(FIND_MY_STRUCTURES, // testvar for fixing bug with link detection when storages are present.
+        //    {filter: {structureType: STRUCTURE_LINK}})[0]; // put the array in the variable!
+        //console.log(linktest);
+        //console.log(linktest != undefined);  //then test if the first element is defined!
+            //this reports true if there is a link, and false if there is no link in the room.
+        
+        
         var linkFrom = 0;
         if(storages.length > 0){ // Make code look for links near sources and near storage/spawn and transfer from-links to the to-link
-            
             
             var linkController = 0;
             var linkTower = 0;
@@ -139,18 +146,18 @@ module.exports.loop = function () {
                  for(var id in towers){
                     var linkTemp = towers[id].pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
                     if(linkTemp.length > 0){
-                        linkTower = linkTemp[0];
+                        linkTower = linkTemp;
                     }
                      
                  }
             }
             
             //linkTo.pos etc. has been used because this returns undefined. Because the zero'th element is chosen (LinkTemp[0]), length will always return 0.
-            if(linkTo.pos != undefined){ //if controller || tower links are defined and empty, prioritize them over the storage link.
+            if(linkTo != undefined){ //if controller || tower links are defined and empty, prioritize them over the storage link.
                 if(linkController.pos != undefined && linkController.energy == 0){
-                    linkTo = LinkController
+                    linkTo = LinkController[0];
                 }else if(linkTower.pos != undefined && linkTower.energy == 0){
-                    linkTo = linkTower;
+                    linkTo = linkTower[0];
                 }
                 if(linkFrom.energy == linkFrom.energyCapacity && linkTo.energy == 0 && linkFrom.cooldown == 0){
                     linkFrom.transferEnergy(linkTo); //then send the energy
