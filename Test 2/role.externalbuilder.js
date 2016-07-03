@@ -17,7 +17,7 @@ var roleExternalBuilder = {
     	        targets = creep.room.find(FIND_CONSTRUCTION_SITES);
                 if(targets.length) {
                     if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(targets[0]);
+                        creep.moveTo(targets[0], {reusePath: 20});
                     }
                 }
 	        }
@@ -28,7 +28,7 @@ var roleExternalBuilder = {
 	        }else{
     	        var drops = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
     	        creep.moveTo(drops);
-        	    creep.pickup(drops);
+        	    creep.pickup(drops, {reusePath: 5});
 	        }
 	    }
         
