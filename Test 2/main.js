@@ -600,7 +600,6 @@ module.exports.loop = function () {
                     }
                     
                 }
-                console.log(healer);
                 if(creep.memory.role == 'healer'){
                         roleHealer.run(creep);
                     }
