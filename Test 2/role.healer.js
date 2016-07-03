@@ -20,7 +20,7 @@ var roleHealer = {
                     creep.moveTo(Game.flags.Flag2.pos, {reusePath: 10});
                 }
             }else{
-                creep.moveTo(Game.flags.Flag1.pos, {reusePath: 10});
+                creep.moveTo(Game.rooms[creep.memory.Home].controller.pos);
             }
         }
     }

@@ -95,7 +95,7 @@ module.exports.loop = function () {
                             return (structure.structureType == STRUCTURE_CONTAINER );
                         }
                 });
-        var links = containers = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
+        var links = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
                         filter: (structure) => {
                             return (structure.structureType == STRUCTURE_LINK );
                         }
@@ -663,7 +663,7 @@ module.exports.loop = function () {
         
         if(Game.flags.FarmFlag2 != undefined){
             if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
-                farmTile.run(Game.flags.FarmFlag2,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),false);
+                farmTile.run(Game.flags.FarmFlag2,Game.spawns[SpawnName],ArmyCreep(Game.rooms[MyRoom].energyCapacityAvailable/2), WorkCreep(0), TransportCreep(Game.rooms[MyRoom].energyCapacityAvailable/2,16),BuildCreep(Game.rooms[MyRoom].energyCapacityAvailable/2),true);
                 twoLoop = Game.cpu.getUsed() - startCpu;
             }
     

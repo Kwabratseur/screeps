@@ -14,11 +14,10 @@ var roleBuilder = {
 	        var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
             if(targets.length) {
                 
-                if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
                     if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(targets[0], {reusePath: 50});
                     }
-                }
+
             
             }
             else{
@@ -81,29 +80,27 @@ var roleBuilder = {
 	                creep.moveTo(Game.flags.Dismantle.pos, {reusePath: 10});
 	            }
 	        }else{
-	        var storages = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_STORAGE) ;
-                    }
-                });
+	            if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
+    	            var storages = creep.room.storage;
 
-	            var Sources = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_SPAWN ||
-                                structure.structureType == STRUCTURE_EXTENSION) ;
-                    }
-                });
-                if(storages[0] != undefined){
-                    
-        	            if(storages[0].transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                                creep.moveTo(storages[0], {reusePath: 10});
-                           }
-                    
-                }else if(creep.room.energyAvailable > creep.room.energyCapacityAvailable/2){
-                    if(Sources[0].transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                            creep.moveTo(Sources[0], {reusePath: 10});
+    	            var Sources = creep.room.find(FIND_STRUCTURES, {
+                        filter: (structure) => {
+                            return (structure.structureType == STRUCTURE_SPAWN ||
+                                    structure.structureType == STRUCTURE_EXTENSION) ;
                         }
-                }
+                    });
+                    if(storages != undefined){
+                        
+            	            if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                                    creep.moveTo(storages, {reusePath: 10});
+                               }
+                        
+                    }else if(creep.room.energyAvailable > creep.room.energyCapacityAvailable/2){
+                        if(Sources[0].transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                                creep.moveTo(Sources[0], {reusePath: 10});
+                            }
+                    }
+	            }
 	        }
                 //creep.drop(RESOURCE_ENERGY) //drop i u want it to help start up
 	        

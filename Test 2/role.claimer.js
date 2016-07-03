@@ -34,7 +34,7 @@ var roleClaimer = {
         }
         
         else{
-            creep.moveTo(Game.flags.Flag1.pos, {reusePath: 50});
+            creep.moveTo(Game.rooms[creep.memory.Home].controller.pos);
         }
     }
 };

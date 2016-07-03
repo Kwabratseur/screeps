@@ -24,13 +24,10 @@ var roleEnergyMon = {
                         return (structure.structureType == STRUCTURE_TOWER );
                     }
             });
-        var storages = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_STORAGE && _.sum(structure.store) > 0) ;
-                    }
-            });
-        if(storages[0] != undefined){
-            var link = storages[0].pos.findInRange(FIND_MY_STRUCTURES, 2,
+        var storages = creep.room.storage
+        
+        if(storages != undefined){
+            var link = storages.pos.findInRange(FIND_MY_STRUCTURES, 2,
                 {filter: {structureType: STRUCTURE_LINK}})[0]
         }
 
@@ -41,14 +38,14 @@ var roleEnergyMon = {
                     creep.moveTo(link);
                 }
             }else{
-                if(creep.transfer(storages[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                    creep.moveTo(storages[0], {reusePath: 5});
+                if(creep.transfer(storages, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                    creep.moveTo(storages, {reusePath: 5});
                 }
             }
-        }else if(storages.length > 0){ //if storage is not empty
+        }else if(_.sum(storages.store) > 0){ //if storage is not empty
             if(creep.carry.energy == 0){ // if creep is empty
-                    if(storages[0].transfer(creep, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                        creep.moveTo(storages[0], {reusePath: 5});
+                    if(storages.transfer(creep, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                        creep.moveTo(storages, {reusePath: 5});
                     }
             }else if(spawn.length > 0){ //if spawn is not full
                 if(creep.transfer(spawn[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //deposit @ spawn
@@ -58,11 +55,7 @@ var roleEnergyMon = {
                 if(creep.transfer(extensions_Empty[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //deposit @ empty extension
                     creep.moveTo(extensions_Empty[0], {reusePath: 5});
                 }
-            }else{ // if spawn and  extensions are full
-                /*var c = 0;
-                if(towers[0].energy >= 800 && towers[0].energy >= towers[1].energy){
-                    c = 1;
-                }*/
+            }else{ 
                 if(creep.transfer(towers[No], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //deposit @ tower
                     creep.moveTo(towers[No], {reusePath: 5});
                 }
@@ -78,6 +71,10 @@ var roleEnergyMon = {
                     if(creep.transfer(spawn[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //deposit @ spawn
                         creep.moveTo(spawn[0], {reusePath: 5});
                     }
+                }
+            }else{
+                if(creep.transfer(extensions_Empty[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //deposit @ empty extension
+                    creep.moveTo(extensions_Empty[0], {reusePath: 5});
                 }
             }
         }
