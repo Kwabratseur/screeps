@@ -2,7 +2,7 @@ var roleBuilder = {
 
     /** @param {Creep} creep **/
     run: function(creep,AvailableEnergy,No) {
-        var BufferThreshold = 3000;
+        var BufferThreshold = 10000;
 	    if(creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
 	    }
@@ -16,7 +16,7 @@ var roleBuilder = {
                 
                 if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
                     if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(targets[0]);
+                        creep.moveTo(targets[0], {reusePath: 50});
                     }
                 }
             
@@ -52,18 +52,18 @@ var roleBuilder = {
                     if(No == 0 && NoDamaged.length > numberDamaged){
                         //if(NoDamaged.length > numberDamaged){
                             if(creep.repair(ClosestDamagedStructure) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(ClosestDamagedStructure);
+                                creep.moveTo(ClosestDamagedStructure, {reusePath: 50});
                             }
                         //}
                     }else{
                         if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
-                            creep.moveTo(creep.room.controller);
+                            creep.moveTo(creep.room.controller, {reusePath: 20});
                         }
                     }
                     //
                 }
                 else{
-                    creep.moveTo(Game.flags.Flag3.pos);
+                    creep.moveTo(Game.flags.Flag3.pos, {reusePath: 20});
                 }
             }
 	    }
@@ -74,11 +74,11 @@ var roleBuilder = {
 	            var target = creep.pos.findClosestByRange(FIND_STRUCTURES);
                     if(target) {
                         if(creep.dismantle(target) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(target);    
+                            creep.moveTo(target, {reusePath: 50});    
                         }
                     }   
 	            }else{
-	                creep.moveTo(Game.flags.Dismantle.pos);
+	                creep.moveTo(Game.flags.Dismantle.pos, {reusePath: 10});
 	            }
 	        }else{
 	        var storages = creep.room.find(FIND_STRUCTURES, {

@@ -1,3 +1,44 @@
+/*
+TODO:
+Optimize finding of object by putting it in memory
+
+Create spawn queue per room +  amount desired body parts
+
+Optimize moveTo like:
+// Execute moves by cached paths at first 
+for(var name in Game.creeps) {
+    Game.creeps[name].moveTo(target, {noPathFinding: true});
+}
+
+// Perform pathfinding only if we have enough CPU
+if(Game.cpu.tickLimit - Game.cpu.getUsed() > 20) {
+    for(var name in Game.creeps) {
+        Game.creeps[name].moveTo(target);
+    }
+}
+
+put the target and source in creep memory and recalculate when needed
+
+Room Object can be updated once in 20 ticks or so
+
+Optimize work boundaries, creeps may only pickup resources when threshold is met. Should not be blocked to work
+
+if storage is empty, mind the link!
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
 var startCpu = Game.cpu.getUsed();
 var profiler = require('screeps-profiler');
 var roleHarvester = require('role.harvester');
@@ -24,6 +65,8 @@ module.exports.loop = function () {
             delete Memory.creeps[name];
         }
     }
+
+
     
     
     
@@ -36,6 +79,41 @@ module.exports.loop = function () {
         filter: { structureType: STRUCTURE_TOWER }
         });
         
+        var AvailableEnergy = 0;
+        var storages = 0;
+        var containers = 0;
+
+        
+        AvailableEnergy = Game.rooms[MyRoom].energyAvailable;
+        storages = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
+                        filter: (structure) => {
+                            return (structure.structureType == STRUCTURE_STORAGE );
+                        }
+                });    
+        containers = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
+                        filter: (structure) => {
+                            return (structure.structureType == STRUCTURE_CONTAINER );
+                        }
+                });
+        var links = containers = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
+                        filter: (structure) => {
+                            return (structure.structureType == STRUCTURE_LINK );
+                        }
+                });
+        
+        if(!Memory.rooms[MyRoom].RoomInfo){ ///Use this method to save on CPU, try to add as much variables as possible without getting into memory problems.
+            Memory.rooms[MyRoom].RoomInfo = {
+                SpawnName: name,
+                RoomName: Game.spawns[SpawnName].room.name,
+                Sources:  Game.rooms[MyRoom].find(FIND_SOURCES),
+                Towers: towers,
+                storages: storages,
+                containers: containers,
+                Links: links
+            };
+        }
+        
+        
         //console.log('Room: '+MyRoom+'Spawn:'+name);
         //console.log('Room: '+Game.rooms[MyRoom].controller.my);
         
@@ -45,7 +123,7 @@ module.exports.loop = function () {
         var worker = _.filter(Game.creeps, (creep) => (creep.memory.role == 'worker') && (creep.memory.Home == MyRoom));
         var defender = _.filter(Game.creeps, (creep) => (creep.memory.role == 'defender') && (creep.memory.Home == MyRoom));
         var energymon = _.filter(Game.creeps, (creep) => (creep.memory.role == 'energymon') && (creep.memory.Home == MyRoom));
-        var healer = _.filter(Game.creeps, (creep) => (creep.memory.role == 'healer') && (creep.memory.Home == MyRoom));
+        var healer = _.filter(Game.creeps, (creep) => creep.memory.role == 'healer');
         var claimer = _.filter(Game.creeps, (creep) => (creep.memory.role == 'claimer'));
         
         var SetupDefense = (function() {
@@ -98,22 +176,7 @@ module.exports.loop = function () {
             
         }
         
-        var AvailableEnergy = 0;
-        var storages = 0;
-        var containers = 0;
 
-        
-        AvailableEnergy = Game.rooms[MyRoom].energyAvailable;
-        storages = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
-                        filter: (structure) => {
-                            return (structure.structureType == STRUCTURE_STORAGE );
-                        }
-                });    
-        containers = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
-                        filter: (structure) => {
-                            return (structure.structureType == STRUCTURE_CONTAINER );
-                        }
-                });
 
         //var linktest = Game.rooms[MyRoom].find(FIND_MY_STRUCTURES, // testvar for fixing bug with link detection when storages are present.
         //    {filter: {structureType: STRUCTURE_LINK}})[0]; // put the array in the variable!
@@ -259,7 +322,7 @@ module.exports.loop = function () {
             if(remainder != 0){
                 target = remainder;
             }
-            for(i = 0; i < 5; i++ ) {
+            for(i = 0; i < 0; i++ ) {
                 cost = CreepCost(Layout);
 
                 if((cost > target) || (cost > AvailableEnergy)){   
@@ -537,6 +600,7 @@ module.exports.loop = function () {
                     }
                     
                 }
+                console.log(healer);
                 if(creep.memory.role == 'healer'){
                         roleHealer.run(creep);
                     }
@@ -616,21 +680,22 @@ module.exports.loop = function () {
                 TickCounter: 0,
                 AggregatedAverage: MainLoop,
                 
-            }
+            };
         }
         if(Memory.CpuStats.TickCounter > LogLength){
-            console.log('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.')
+            console.log('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.');
+            Game.notify('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.', 720);
             Memory.CpuStats.TickCounter = 0;
             Memory.CpuStats.AggregatedAverage = MainLoop;
             Game.profiler.profile(5);
         }else{
-            Memory.CpuStats.AggregatedAverage = (Memory.CpuStats.AggregatedAverage + MainLoop)/2
+            Memory.CpuStats.AggregatedAverage = (Memory.CpuStats.AggregatedAverage + MainLoop)/2;
             
         }
         Memory.CpuStats.TickCounter += 1;
         var oneLoop = 0;
         var twoLoop = 0;
-        var shortage = MainLoop-Game.cpu.limit
+        var shortage = MainLoop-Game.cpu.limit;
         if(shortage > 0){
             var message = 'CPU usage-limit='+shortage+'     - Main:'+MainLoop+ ' Farm1:'+oneLoop+' Farm2:'+twoLoop+' ; Bucket:'+Game.cpu.bucket+'; TickLimit:'+Game.cpu.tickLimit+' ;happened at tick: '+Game.time;
             console.log(message);

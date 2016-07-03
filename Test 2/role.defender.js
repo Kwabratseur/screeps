@@ -3,7 +3,7 @@ var roleDefender = {
     /** @param {Creep} creep **/
     run: function(creep, Target) {
         if(creep.attack(Target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(Target);
+                creep.moveTo(Target, {reusePath: 50});
             }
         else {
             if(Game.flags.Flag2 != undefined){
@@ -12,20 +12,20 @@ var roleDefender = {
                     var hostileBuildings = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES);
                     if(hostiles != null){
                         if(creep.attack(hostiles) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(hostiles);
+                            creep.moveTo(hostiles, {reusePath: 50});
                         }
                     }else if(hostileBuildings != null){
                         if(creep.attack(hostileBuildings) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(hostileBuildings);
+                            creep.moveTo(hostileBuildings, {reusePath: 50});
                         }
                     }
                     
             }else{
-                creep.moveTo(Game.flags.Flag2.pos);
+                creep.moveTo(Game.flags.Flag2.pos, {reusePath: 50});
             }
             }
             else{
-                creep.moveTo(Game.flags.Flag1.pos)
+                creep.moveTo(Game.flags.Flag1.pos, {reusePath: 50})
             }
         }
     }

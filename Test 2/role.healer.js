@@ -17,10 +17,10 @@ var roleHealer = {
                 if(creep.pos.inRangeTo(Game.flags.Flag2,10)){
                 
                 }else{
-                    creep.moveTo(Game.flags.Flag2.pos);
+                    creep.moveTo(Game.flags.Flag2.pos, {reusePath: 10});
                 }
             }else{
-                creep.moveTo(Game.flags.Flag1.pos);
+                creep.moveTo(Game.flags.Flag1.pos, {reusePath: 10});
             }
         }
     }
