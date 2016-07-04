@@ -2,6 +2,7 @@ var roleUpgrader = {
 
     /** @param {Creep} creep **/
     run: function(creep,AvailableEnergy) {
+        var Moveto = require('move.to');
         var moresources = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (structure.structureType == STRUCTURE_EXTENSION ||
@@ -19,13 +20,13 @@ var roleUpgrader = {
             if(storages[0] != undefined){
                 if(_.sum(storages[0].store) > 3000){
         	        if(storages[0].transfer(creep, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                        creep.moveTo(storages[0], {reusePath: 10});
+                        Moveto.move(creep,storages[0]);
                     }
                 }
             }else{
                 if(creep.room.energyAvailable > creep.room.energyCapacityAvailable/2){
                     if(moresources[0].transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                            creep.moveTo(moresources[0], {reusePath: 10});
+                            Moveto.move(creep,moresources[0]);
                         }
                 }
                 
@@ -33,7 +34,7 @@ var roleUpgrader = {
         }
         else {
             if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(creep.room.controller, {reusePath: 50});
+                Moveto.move(creep,creep.room.controller);
             }
         }
 	}

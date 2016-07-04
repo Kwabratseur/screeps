@@ -1,7 +1,10 @@
+
 var roleBuilder = {
 
     /** @param {Creep} creep **/
-    run: function(creep,AvailableEnergy,No) {
+    run: function(creep,AvailableEnergy,No,targets) {
+        var Moveto = require('move.to');
+        var Struct = require('get.memory');
         var BufferThreshold = 10000;
 	    if(creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
@@ -9,18 +12,15 @@ var roleBuilder = {
 	    if(!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
 	        creep.memory.building = true;
 	    }
-
+        //var test = Struct.run(Memory.rooms[creep.memory.Home].RoomInfo.Sources);
+        //console.log(test);
 	    if(creep.memory.building) {
-	        var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+	        //var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
             if(targets.length) {
-                
-                    if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(targets[0], {reusePath: 50});
-                    }
-
-            
-            }
-            else{
+                if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
+                    Moveto.move(creep,targets[0]);
+                }
+            }else{
                 var WallHp = 0.00001;
                 var RampHp = 0.01;
                 var RoadHp = 0.7;
@@ -51,18 +51,18 @@ var roleBuilder = {
                     if(No == 0 && NoDamaged.length > numberDamaged){
                         //if(NoDamaged.length > numberDamaged){
                             if(creep.repair(ClosestDamagedStructure) == ERR_NOT_IN_RANGE) {
-                                creep.moveTo(ClosestDamagedStructure, {reusePath: 50});
+                                Moveto.move(creep,ClosestDamagedStructure);
                             }
                         //}
                     }else{
                         if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
-                            creep.moveTo(creep.room.controller, {reusePath: 20});
+                            Moveto.move(creep,creep.room.controller);
                         }
                     }
                     //
                 }
                 else{
-                    creep.moveTo(Game.flags.Flag3.pos, {reusePath: 20});
+                    Moveto.move(creep,Game.flags.Flag3.pos);
                 }
             }
 	    }
@@ -73,11 +73,11 @@ var roleBuilder = {
 	            var target = creep.pos.findClosestByRange(FIND_STRUCTURES);
                     if(target) {
                         if(creep.dismantle(target) == ERR_NOT_IN_RANGE) {
-                            creep.moveTo(target, {reusePath: 50});    
+                            Moveto.move(creep,target);    
                         }
                     }   
 	            }else{
-	                creep.moveTo(Game.flags.Dismantle.pos, {reusePath: 10});
+	                Moveto.move(creep,Game.flags.Dismantle.pos);
 	            }
 	        }else{
 	            if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
@@ -92,12 +92,12 @@ var roleBuilder = {
                     if(storages != undefined){
                         
             	            if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                                    creep.moveTo(storages, {reusePath: 10});
+                                    Moveto.move(creep,storages);
                                }
                         
                     }else if(creep.room.energyAvailable > creep.room.energyCapacityAvailable/2){
                         if(Sources[0].transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                                creep.moveTo(Sources[0], {reusePath: 10});
+                                Moveto.move(creep,Sources[0]);
                             }
                     }
 	            }

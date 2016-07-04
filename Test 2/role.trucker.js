@@ -3,7 +3,8 @@ var roleTrucker = {
     /** @param {Creep} creep **/
     run: function(creep) {
         var buildInfra = false;
-
+        var Moveto = require('move.to');
+        
         if(creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
             creep.memory.harvesting = false;
 	    }
@@ -13,7 +14,7 @@ var roleTrucker = {
 	    if(creep.memory.harvesting) {
 	        
 	        if(creep.memory.HarvestTile != creep.room.name){
-	            creep.moveTo(Game.flags[creep.memory.FlagName], {reusePath: 50});
+	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
 	        }else if(creep.memory.HarvestTile == creep.room.name){
     	        var drops = creep.room.find(FIND_DROPPED_RESOURCES);
     	        var c = 0;
@@ -23,7 +24,7 @@ var roleTrucker = {
     	            }
     	        }
     	        if(drops.length){
-        	        creep.moveTo(drops[c], {reusePath: 50});
+        	        Moveto.move(creep,drops[c]);
         	        creep.pickup(drops[c]);
     	        } 
 	        }
@@ -70,7 +71,7 @@ var roleTrucker = {
                     }
                 });
                 if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0], {reusePath: 2});
+                    Moveto.move(creep,targets[0]);
                 }
                 }else{
                     if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -87,7 +88,7 @@ var roleTrucker = {
                                 }
                             }
                         }
-                        creep.moveTo(targets[0], {reusePath: 20});
+                        Moveto.move(creep,targets[0]);
                     }
                 }
              /*if(container.length == 0   ) {

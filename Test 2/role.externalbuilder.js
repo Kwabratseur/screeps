@@ -3,6 +3,7 @@ var roleExternalBuilder = {
     /** @param {Creep} creep **/
     run: function(creep) {
         //console.log(creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES));
+        var Moveto = require('move.to');
 	    if(creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
 	    }
@@ -12,23 +13,23 @@ var roleExternalBuilder = {
 
 	    if(creep.memory.building) {
 	         if(creep.memory.HarvestTile != creep.room.name){
-	            creep.moveTo(Game.flags[creep.memory.FlagName], {reusePath: 50});
+	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
 	        }else{
     	        targets = creep.room.find(FIND_CONSTRUCTION_SITES);
                 if(targets.length) {
                     if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(targets[0], {reusePath: 20});
+                        Moveto.move(creep,targets[0]);
                     }
                 }
 	        }
 	    
         }else {
             if(creep.memory.HarvestTile != creep.room.name){
-	            creep.moveTo(Game.flags[creep.memory.FlagName], {reusePath: 50});
+	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
 	        }else{
     	        var drops = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
-    	        creep.moveTo(drops);
-        	    creep.pickup(drops, {reusePath: 5});
+    	        Moveto.move(creep,drops);
+        	    creep.pickup(drops);
 	        }
 	    }
         

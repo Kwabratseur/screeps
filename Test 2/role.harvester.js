@@ -3,7 +3,8 @@ var roleHarvester = {
     /** @param {Creep} creep **/
     run: function(creep,No) {
         var buildInfra = false;
-
+        var Moveto = require('move.to');
+        
         if(creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
             creep.memory.harvesting = false;
 	    }
@@ -37,21 +38,21 @@ var roleHarvester = {
 	            }
 	            if(containers[No] != undefined){
     	            if(containers[No].transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-    	                creep.moveTo(containers[No], {reusePath: 40});
+    	                Moveto.move(creep,containers[No]);
     	                
     	            }
     	        }else if(containers[k].transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-    	                creep.moveTo(containers[k], {reusePath: 40});
+    	                Moveto.move(creep,containers[k]);
     	                
     	        }
     	        
 	            
 	        }else if(drops.length>0){
-    	            creep.moveTo(drops[0]);
+    	            Moveto.move(creep,drops[0]);
     	            creep.pickup(drops[0]);
 	        }
 	        }else if(drops.length>0){
-    	            creep.moveTo(drops[0], {reusePath: 20});
+    	            Moveto.move(creep,drops[0]);
     	            creep.pickup(drops[0]);
 	        } 
             /*else {
@@ -102,12 +103,12 @@ var roleHarvester = {
                                     }
                                 }
                             }
-                            creep.moveTo(targets[0], {reusePath: 5});
+                            Moveto.move(creep,targets[0]);
                         }
                     
                 }else{
                     if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(targets[0], {reusePath: 20});
+                        Moveto.move(creep,targets[0]);
                     }
                 }
             
