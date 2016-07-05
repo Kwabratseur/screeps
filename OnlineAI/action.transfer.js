@@ -49,9 +49,9 @@ Transfer.FilterObjects = function(creep,MyRoom,object,resource,n){
         break;
         case 'filled':
             if(object == 'Extensions' || object == 'Spawns' || object == 'Links' || object == 'Towers'){
-                temp = _.filter(temp1, function(structure){return structure.energy > 0; }); 
+                temp = _.filter(temp1, function(structure){return structure.energy == structure.energyCapacity; }); 
             }else{
-                temp = _.filter(temp1, function(structure){return structure.store[RESOURCE_ENERGY] > 50; });
+                temp = _.filter(temp1, function(structure){return structure.store[RESOURCE_ENERGY] == structure.storeCapacity; });
             }
         break;
     }
@@ -64,33 +64,34 @@ Transfer.FilterObjects = function(creep,MyRoom,object,resource,n){
 
 Transfer.to = function(creep,MyRoom,object,resource = RESOURCE_ENERGY,n = 'zero'){//creep,
     var temp = Transfer.FilterObjects(creep,MyRoom,object,resource,n);
+	if(creep.transfer(temp,resource) == ERR_NOT_IN_RANGE){
+	    Moveto.move(creep,temp)
+	}
 	if(!temp){
 	    return true;
 	}else{
-	    if(creep.transfer(temp,resource) == ERR_NOT_IN_RANGE){
-    	    Moveto.move(creep,temp)
-    	}
+	    return false;
 	}
 }
 Transfer.from = function(creep,MyRoom,object,resource = RESOURCE_ENERGY,n = 'zero'){//creep,
     var temp = Transfer.FilterObjects(creep,MyRoom,object,resource,n);
-	if(!temp){
-	    return true;
-	}else{
-    	switch(object) {// call looks like: Transfer.from(creep,creep.room.name,"Storages",RESOURCE_ENERGY,0);
-    		case 'Containers': case 'Storages': case 'Labs': case 'Controllers':
-    		    if(temp.transfer(creep, resource) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                    Moveto.move(creep,temp);
-                }
-    		break;
-    
-    		case 'Extensions': case 'Spawns': case 'Links': case 'Towers':
-                if(temp.transferEnergy(creep) == ERR_NOT_IN_RANGE){
-                    Moveto.move(creep,temp)
-                }
-    	    break;
-    	}
+    //if(temp){
+        
+   //}
+    switch(object) {// call looks like: Transfer.from(creep,creep.room.name,"Storages",RESOURCE_ENERGY,0);
+		case 'Containers': case 'Storages': case 'Labs': case 'Controllers':
+		    if(temp.transfer(creep, resource) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                Moveto.move(creep,temp);
+            }
+		break;
+
+		case 'Extensions': case 'Spawns': case 'Links': case 'Towers':
+            if(temp.transferEnergy(creep) == ERR_NOT_IN_RANGE){
+                Moveto.move(creep,temp)
+            }
+	    break;
 	}
+	
 }
 
 module.exports = Transfer;

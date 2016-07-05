@@ -3,9 +3,9 @@ var roleFarmer = {
     /** @param {Creep} creep **/
     run: function(creep,No) {
         var Moveto = require('move.to');
-        if(creep.memory.destRoom != creep.room.name){
-	            Moveto.move(creep,Game.flags[creep.memory.Flag]);
-	      }else{
+        if(creep.memory.HarvestTile != creep.room.name){
+	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
+	    }else{
             var sources = creep.room.find(FIND_SOURCES);
 
             if(creep.harvest(sources[No]) == ERR_NOT_IN_RANGE) {

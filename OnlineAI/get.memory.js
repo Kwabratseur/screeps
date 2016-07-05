@@ -14,6 +14,8 @@ Memstructures.run = function(MemoryPointer){ //use this function to retrieve bui
     var returnresult = [];
     for(i in MemoryPointer){
         returnresult.push(Game.getObjectById(MemoryPointer[i]));
+        //console.log(returnresult[i].pos == undefined);
+        
         if(Game.getObjectById(MemoryPointer[i]) == undefined && MemoryPointer.length > 0){
             console.log("Causing error: "+MemoryPointer[0]);
             console.log('error @ '+Game.getObjectById(MemoryPointer[i]));
@@ -21,8 +23,12 @@ Memstructures.run = function(MemoryPointer){ //use this function to retrieve bui
             break;
         }
     }
+    if(returnresult.length == 0){
+        return true;
+            //console.log(returnresult);
+    }else{
         return returnresult;
-    
+    }
     //console.log('returned:'+(returnresult == false));
    
     

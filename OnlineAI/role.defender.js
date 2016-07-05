@@ -25,7 +25,7 @@ var roleDefender = {
             }
             }
             else{
-                creep.moveTo(Game.rooms[creep.memory.destRoom].controller.pos);
+                creep.moveTo(Game.rooms[creep.memory.Home].controller.pos);
             }
         }
     }

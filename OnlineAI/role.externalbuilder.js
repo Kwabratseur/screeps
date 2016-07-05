@@ -12,8 +12,8 @@ var roleExternalBuilder = {
 	    }
 
 	    if(creep.memory.building) {
-	         if(creep.memory.destRoom != creep.room.name){
-	            Moveto.move(creep,Game.flags[creep.memory.Flag]);
+	         if(creep.memory.HarvestTile != creep.room.name){
+	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
 	        }else{
     	        targets = creep.room.find(FIND_CONSTRUCTION_SITES);
                 if(targets.length) {
@@ -22,19 +22,19 @@ var roleExternalBuilder = {
                     }
                 }
 	        }
-
+	    
         }else {
-            if(creep.memory.destRoom != creep.room.name){
-	            Moveto.move(creep,Game.flags[creep.memory.Flag]);
+            if(creep.memory.HarvestTile != creep.room.name){
+	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
 	        }else{
     	        var drops = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES);
     	        Moveto.move(creep,drops);
         	    creep.pickup(drops);
 	        }
 	    }
-
+        
     }
-
+    
 };
 
 module.exports = roleExternalBuilder;

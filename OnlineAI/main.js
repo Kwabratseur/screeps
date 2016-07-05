@@ -46,32 +46,27 @@ module.exports.loop = function () {
     profiler.wrap(function() {
     var LogLength = 20;
     //var MyRoom = Game.spawns.Spawn1.room.name;
-
+    
     for(var name in Memory.creeps) {
         if(!Game.creeps[name]) {
             delete Memory.creeps[name];
         }
     }
-
+    
     var oneLoop = false;
     var twoLoop = false;
-
+    
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
 		var SpawnName = name;
         var MyRoom = Game.spawns[SpawnName].room.name;    //Then offcourse make everything depend from variable MyRoom(mostly the case)
         var AvailableEnergy = 0;
         AvailableEnergy = Game.rooms[MyRoom].energyAvailable;
-        var buildInfra = false;
 
-        if(!Memory.rooms[MyRoom]){
-            Memory.rooms[MyRoom] = {};
-        }
-
-        if(!Memory.rooms[MyRoom].RoomInfo){ ///Use this method to save on CPU, try to add as much variables as possible without getting into memory problems.
+        if(!Memory.rooms[MyRoom] || !Memory.rooms[MyRoom].RoomInfo){ ///Use this method to save on CPU, try to add as much variables as possible without getting into memory problems.
             Mem.set(MyRoom,SpawnName);
             console.log('Setting memory for room: '+MyRoom);
         }
-
+        
 
         var containers = Mem.run(Memory.rooms[MyRoom].RoomInfo.Containers);
         var towers = Mem.run(Memory.rooms[MyRoom].RoomInfo.Towers);
@@ -82,19 +77,9 @@ module.exports.loop = function () {
         var walls = Mem.run(Memory.rooms[MyRoom].RoomInfo.Walls);
         var ramparts = Mem.run(Memory.rooms[MyRoom].RoomInfo.Ramparts);
         var roads = Mem.run(Memory.rooms[MyRoom].RoomInfo.Roads);
-
-
         //extractors = Mem.run(Memory.rooms[MyRoom].RoomInfo.Extractors);
-        //terminals = Mem.run(Memory.rooms[MyRoom].RoomInfo.Terminals);
+        //terminals = Mem.run(Memory.rooms[MyRoom].RoomInfo.Terminals);    
         //labs = Mem.run(Memory.rooms[MyRoom].RoomInfo.Labs);
-
-        var Sites = Game.rooms[MyRoom].find(FIND_CONSTRUCTION_SITES);
-        var structs = Game.rooms[MyRoom].find(FIND_STRUCTURES);
-        var drops = Game.rooms[MyRoom].find(FIND_DROPPED_RESOURCES);
-        //console.log(structs.length);
-
-
-
         /*console.log(containers == false);
         console.log(towers == false);
         console.log(links == false);
@@ -106,16 +91,16 @@ module.exports.loop = function () {
         console.log(roads == false);*/
         //console.log('links[0]: '+(Memory.rooms[MyRoom].RoomInfo.Links[0] == null));
 
-
-        var harvester = _.filter(Game.creeps, (creep) => (creep.memory.role == 'harvester') && (creep.memory.destRoom == MyRoom));
-        var builder = _.filter(Game.creeps, (creep) => (creep.memory.role == 'builder') && (creep.memory.destRoom == MyRoom));
-        var upgrader = _.filter(Game.creeps, (creep) => (creep.memory.role == 'upgrader') && (creep.memory.destRoom == MyRoom));
-        var worker = _.filter(Game.creeps, (creep) => (creep.memory.role == 'worker') && (creep.memory.destRoom == MyRoom));
-        var defender = _.filter(Game.creeps, (creep) => (creep.memory.role == 'defender') && (creep.memory.destRoom == MyRoom));
-        var energymon = _.filter(Game.creeps, (creep) => (creep.memory.role == 'energymon') && (creep.memory.destRoom == MyRoom));
-        var healers = _.filter(Game.creeps, (creep) => creep.memory.role == 'healer');
+ 
+        var harvester = _.filter(Game.creeps, (creep) => (creep.memory.role == 'harvester') && (creep.memory.Home == MyRoom));
+        var builder = _.filter(Game.creeps, (creep) => (creep.memory.role == 'builder') && (creep.memory.Home == MyRoom));
+        var upgrader = _.filter(Game.creeps, (creep) => (creep.memory.role == 'upgrader') && (creep.memory.Home == MyRoom));
+        var worker = _.filter(Game.creeps, (creep) => (creep.memory.role == 'worker') && (creep.memory.Home == MyRoom));
+        var defender = _.filter(Game.creeps, (creep) => (creep.memory.role == 'defender') && (creep.memory.Home == MyRoom));
+        var energymon = _.filter(Game.creeps, (creep) => (creep.memory.role == 'energymon') && (creep.memory.Home == MyRoom));
+        var healers = _.filter(Game.creeps, (creep) => (creep.memory.role == 'healer'));
         var claimer = _.filter(Game.creeps, (creep) => (creep.memory.role == 'claimer'));
-
+        
         var SetupDefense = (function() {
         var executed = false;
         return function () {
@@ -125,60 +110,61 @@ module.exports.loop = function () {
                roomDefense.run(ExitCoords,MyRoom);
             }
         };
-        })();
-
+        })();    
+        
+            
         if(Game.rooms[MyRoom].memory.Level == undefined || Game.rooms[MyRoom].controller.level != Game.rooms[MyRoom].memory.Level){
             Memory.rooms[MyRoom].Level = Game.rooms[MyRoom].controller.level;
             Game.notify('Room: '+MyRoom+' Just leveled up to'+Game.rooms[MyRoom].controller.level);
             console.log('Room: '+MyRoom+' Just leveled up to'+Game.rooms[MyRoom].controller.level);
-            if(Game.rooms[MyRoom].controller.level == 2){
-                Memory.rooms[MyRoom].Eticks = Game.time + 500;
-            }else{
-                Memory.rooms[MyRoom].Eticks = Game.time + 3;
-            }
+            Memory.rooms[MyRoom].Eticks = 3;
             Mem.reset(MyRoom);
         }
-
-        if((Memory.rooms[MyRoom].Eticks - Game.time) > 0){ //spread more tasks over longer period
+        
+        if(Memory.rooms[MyRoom].Eticks > 0){ //spread more tasks over longer period
                 var Ecenter = Game.flags.EnergyCenter;
-                buildInfra = true;
-                if((Memory.rooms[MyRoom].Eticks - Game.time) > 490){
-                    console.log('setting up defenses and energycenter');
-                    if((Memory.rooms[MyRoom].Eticks - Game.time) < 490){
-                        energyCenter(Ecenter);
-                    }else{
-                        SetupDefense();
-                    }
-                }
-                if((Memory.rooms[MyRoom].Eticks - Game.time) < 3){
-                    energyCenter(Ecenter);
-                }
+                //SetupDefense();
+                //energyCenter(Ecenter);
+                Memory.rooms[MyRoom].Eticks -= 1;
         }
 
-        if((!Memory.rooms[MyRoom].Sites || (Memory.rooms[MyRoom].Sites != Sites.length)) && (Sites.length > 0)){
-            Memory.rooms[MyRoom].Sites = Sites.length;
-            console.log('Building structure /making build queue in room'+MyRoom+', BuildingSites:'+Sites.length);
-            Mem.reset(MyRoom);
-        }
 
-        if(!Memory.rooms[MyRoom].structs || (Memory.rooms[MyRoom].structs != structs.length)){
-            Memory.rooms[MyRoom].structs = structs.length;
-            console.log('Building Destroyed/built in '+MyRoom+', Buildings:'+structs.length);
-            Mem.reset(MyRoom);
-        }
-
+        /*console.log((roads == false));
+        console.log((links == false));
+        console.log(((links == false && links[0] != null) || 
+                     (containers == false && containers[0] != null)|| 
+                     (towers == false && towers[0] != null)|| 
+                     (storages == false && storages[0] != null)|| 
+                     (extensions == false && extensions[0] != null)|| 
+                     (walls == false && walls[0] != null)|| 
+                     (ramparts == false && ramparts[0] != null)|| 
+                     (roads == false && roads[0] != null))&&
+                     (Memory.rooms[MyRoom] != undefined ||
+                     Memory.rooms[MyRoom].RoomInfo != undefined));*/
+                     
+        /*if(((links == false && links != null) || 
+             (containers == false && containers != null)|| 
+             (towers == false && towers != null)|| 
+             (storages == false && storages!= null)|| 
+             (extensions == false && extensions != null)|| 
+             (walls == false && walls != null)|| 
+             (ramparts == false && ramparts != null)|| 
+             (roads == false && roads != null))&&
+             (Memory.rooms[MyRoom] != undefined ||
+             Memory.rooms[MyRoom].RoomInfo != undefined)){
+                 
+            console.log("ObjectId mismatch, resetting memory for: "+MyRoom)
+            Mem.reset(MyRoom); 
+        } //checks for destroyed buildings, if true: reset memory of that room.*/
+        
         function energyCenter(FlagPos){ //change loop order
             //console.log(FlagPos.pos.x);
             var BuildPosX = FlagPos.pos.x;
             var BuildPosY = FlagPos.pos.y;
             var c = 0;
             var BuildingToggle = true; //true is positive, false is negative
-            var NoEx = 5;
-            if(Game.rooms[MyRoom].controller.level > 2){
-                NoEx = (NoEx*2)*(Game.rooms[MyRoom].controller.level-2);
-            }
-            for (var j = 0; j < (NoEx/5); j++){
-                for(i = 0 ; i < 9; i++){
+            for (var j = 0; j < 8; j++){
+                for(i = 0 ; i < 11; i++){
                     if(BuildingToggle){
                         BuildingToggle = false;
                         Game.rooms[MyRoom].createConstructionSite(BuildPosX,BuildPosY,STRUCTURE_EXTENSION);
@@ -187,43 +173,44 @@ module.exports.loop = function () {
                         BuildingToggle = true;
                     }
                     c +=1;
-                    BuildPosX -= 1;
+                    BuildPosY += 1;
                 }
-                BuildPosX = FlagPos.pos.x;
-            BuildPosY += 1;
+                BuildPosY = FlagPos.pos.y;
+            BuildPosX -= 1;
             }
         }
-
+        
         var linkFrom = 0;
-        if(storages.length > 0){ // Rewrite Link-code, maybe put it in own Module, at least make it use the memory ID's.
-
+        if(storages.length > 0){ // Rewrite Link-code, maybe put it in own Module, at least make it use the memory ID's. 
+            
             var linkController = 0;
             var linkTower = 0;
-
-            var linkTo = Game.rooms[MyRoom].storage.pos.findInRange(links,2);
-
+            
+            var linkTo = Game.rooms[MyRoom].storage.pos.findInRange(FIND_MY_STRUCTURES, 2,
+            {filter: {structureType: STRUCTURE_LINK}})[0];
+            
             for(id in sources){ // Look for link near sources
-                var linkTemp = sources[id].pos.findInRange(links,2);
-
+                var linkTemp = sources[id].pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
+                
                 if(linkTemp.length > 0){
                     linkFrom = linkTemp[0];
                 } // if link is found near a source, designate it as a linkFrom
             }
-
-            if(Game.rooms[MyRoom].controller.pos.findInRange(links, 2)){ //look for link near controller
-                linkController = Game.rooms[MyRoom].controller.pos.findInRange(links, 2);
+            
+            if(Game.rooms[MyRoom].controller.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}})){ //look for link near controller
+                linkController = Game.rooms[MyRoom].controller.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
             }
-
+            
             if(towers.length > 0){  //look for links near towers
                  for(var id in towers){
-                    var linkTemp = towers[id].pos.findInRange(links, 2);
+                    var linkTemp = towers[id].pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
                     if(linkTemp.length > 0){
                         linkTower = linkTemp;
                     }
-
+                     
                  }
             }
-
+            
             if(linkTo != undefined){ //if controller || tower links are defined and empty, prioritize them over the storage link.
                 if(linkController.pos != undefined && linkController.energy == 0){
                     linkTo = LinkController[0];
@@ -235,16 +222,16 @@ module.exports.loop = function () {
                 }
             }
         }
-
-
-        var hostiles = 0;//Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-
+        
+    
+        var hostiles = Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        
         var healer = Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS, {  // <-----------------------that's how we find stuff in the room, check code for occurance.
                         filter: function(object) {
                             return object.getActiveBodyparts(HEAL) != 0;
                         }
                     });
-
+                    
         if(healer){
             hostiles = healer;
         }
@@ -265,7 +252,7 @@ module.exports.loop = function () {
             }
             if(storages.length > 0){
                 NEMon = 2;
-                if(_.sum(storages[0].store) > 60000 && Game.rooms[MyRoom].controller.level > 3){
+                if(_.sum(storages[0].store) > 60000){
                     Nupgr += Math.round((_.sum(storages[0].store)-60000)/10000)
                 }
             }
@@ -280,22 +267,22 @@ module.exports.loop = function () {
             if(Hostiles){
                         Nkill += 3;
                         }
-            }
+            }      
             return [Nbuil,Nupgr,Nwork,Nharv,Nkill,NEMon];
         }
-
-
+        
+        
         var Nos = NoCreeps(builder.length,upgrader.length,worker.length,harvester.length,defender.length,AvailableEnergy,hostiles);
 
         //console.log(Math.pow((10-Game.rooms[MyRoom].controller.level),(10-Game.rooms[MyRoom].controller.level)/2));
-
+        
         if(towers.length > 0){
             var damagedStructures = roads.concat(walls,ramparts,containers);
             var structHp = Math.pow((10-Game.rooms[MyRoom].controller.level),(10-Game.rooms[MyRoom].controller.level)/2)
             //if(!damagedStructures){
            // console.log(damagedStructures);
             var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < structure.hitsMax/structHp); });
-
+            
             var c = 0;
             for (i = 0; i < damagedStructures.length; i++){
                 if(damagedStructures[i].hits < damagedStructures[c].hits){
@@ -313,65 +300,63 @@ module.exports.loop = function () {
                     }
             }
         }
-
+  
         //this should be replaced with a spawnqueue in-memory with priorities. Harvesters+workers+Energymanagers have highest priority. If invasion, one set of harvester+worker+energymanager get higher priority then defence
         //also involve buffered amount in the priorities. A creep body size should also be taken into account, wait untill the harvested energy is available somewhere then spawn the creep and write the desired data to memory.
         //make it possible to create creeps for other rooms with the spawn of the other room
-
+        
         if(((Game.flags.AttackController != undefined) || (Game.flags.ClaimController != undefined) || (Game.flags.ReserveController != undefined)) && claimer.length < 1 && Game.rooms[MyRoom].energyCapacityAvailable > 1200){
             var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,0,"Claim");
-			var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'claimer',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+			var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'claimer'});
             console.log('Attack/Claim/Reserve Target Controller with creep: '+newName+ ' in room '+MyRoom);
         }
-
-
-
+        
         if(harvester.length < Nos[3]) {
             var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,12,"Transport");
-            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'harvester',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'harvester',Home: MyRoom});
             console.log('Spawning new harvester: ' + newName+ ' in room '+MyRoom);
         }
-
+        
         if(worker.length < Nos[2]) {
-            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,4,"Work");
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,4,"Work"); 
             console.log(Layout);
-            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'worker',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'worker',Home: MyRoom});
             console.log('Spawning new worker: ' + newName+ ' in room '+MyRoom);
-        }
-
+        } 
+        
         if(energymon.length < Nos[5]) {
             var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/4,AvailableEnergy,10,"Transport");
-            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'energymon',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'energymon',Home: MyRoom});
             console.log('Spawning new EnergyManager: ' + newName+ ' in room '+MyRoom);
         }
-
+        
         if(defender.length < Nos[4] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
-            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/4,AvailableEnergy,20,"Army");
-            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'defender',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/4,AvailableEnergy,20,"Army"); 
+            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'defender',Home: MyRoom});
             console.log('Spawning new defender: ' + newName+ ' in room '+MyRoom);
         }
         if(Game.rooms[MyRoom].energyCapacityAvailable < 800){
-
+            
             if(builder.length < Nos[0] && harvester.length >= Nos[3] && worker.length >= Nos[2] ) {
                 var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/5,AvailableEnergy,10,"Build");
-                var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'builder',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+                var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'builder',Home: MyRoom});
                 console.log('Spawning new builder: ' + newName+ ' in room '+MyRoom);
             }
         }else{
             if(builder.length < Nos[0] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
-                var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,30,"Build");
-                var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'builder',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+                var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,30,"Build"); 
+                var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'builder',Home: MyRoom});
                 console.log('Spawning new builder: ' + newName+ ' in room '+MyRoom);
             }
         }
-
+    
         if(upgrader.length < Nos[1] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
             var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,30,"Build");
-            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'upgrader',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom});
+            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'upgrader',Home: MyRoom});
             console.log('Spawning new upgrader: ' + newName+ ' in room '+MyRoom);
         }
-
-
+        
+        
         var IDCounter = 0;
         var SourceToggle = 0;
         var WorkCounter = 0;
@@ -381,18 +366,19 @@ module.exports.loop = function () {
         var AmountHarvMain = 0;
         var Creephit = false;
         var EmonCounter = 0;
-
-
-
-
+        
+        var Sites = Game.rooms[MyRoom].find(FIND_CONSTRUCTION_SITES);
+        var drops = Game.rooms[MyRoom].find(FIND_DROPPED_RESOURCES);
+        
+        
         for(var name in Game.creeps) { //get rid of this, also stop looping the rooms?
             var creep = Game.creeps[name];
-
+            
             if(creep.memory.role == 'claimer'){
 				roleClaimer.run(creep);
 			}
-
-            if(creep.memory.Home == MyRoom || creep.memory.destRoom == MyRoom){
+			
+            if(creep.memory.Home == MyRoom){
                 if(creep.hits < creep.hitsMax){
                     Creephit = true;
                     Game.notify('A creep has been attacked in '+creep.pos.roomName+' at: '+creep.pos+ ' in room '+MyRoom);
@@ -400,22 +386,22 @@ module.exports.loop = function () {
                 if(Creephit){
                     if(healers == undefined || healers.length < 3){
                         var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/4,AvailableEnergy,20,"Heal");
-                        var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'healer',destRoom: MyRoom,roomTo: MyRoom,roomFrom: MyRoom,flag: MyRoom}); // <---- look for spawn in for loop and insert here with Game.spawns[SpawnName]
+                        var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'healer',Home: MyRoom}); // <---- look for spawn in for loop and insert here with Game.spawns[SpawnName]
                         console.log('Spawning new Healer, under attack!: ' + newName+ ' in room '+MyRoom);
                     }
                 }
                 if(creep.memory.role == 'healer'){
                         roleHealer.run(creep);
                     }
-
+        
                 if(creep.memory.role == 'harvester') {
-
+                    
                     if(HarvesterCounter >= drops.length){
                         HarvesterCounter =0;
-
+                        
                     }
-
-                    roleHarvester.run(creep,AmountHarvMain,buildInfra);
+        
+                    roleHarvester.run(creep,AmountHarvMain);
                     AmountHarvMain+=1;
                     if(AmountHarvMain == 5){
                         AmountHarvMain =0;
@@ -442,7 +428,7 @@ module.exports.loop = function () {
                         }
                     roleWorker.run(creep);
                     }
-
+                    
                 WorkCounter +=1;
                 }
                 if(creep.memory.role == 'energymon'){
@@ -452,7 +438,7 @@ module.exports.loop = function () {
                 if(creep.ticksToLive < 3){
                     console.log('creep:'+creep.name+' died, function: '+creep.memory.role+', left:'+creep.carry.energy);
                     creep.drop(RESOURCE_ENERGY);
-
+                    
                 }
             }
         }
@@ -461,31 +447,31 @@ module.exports.loop = function () {
             if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
                 farmTile.run(Game.flags.FarmFlag,Game.spawns[SpawnName],AvailableEnergy,Game.rooms[MyRoom].energyCapacityAvailable,false);
                 oneLoop = true;
-
+                
             }
         }
-
+        
         if(Game.flags.FarmFlag2 != undefined && !twoLoop){
             if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
                 farmTile.run(Game.flags.FarmFlag2,Game.spawns[SpawnName],AvailableEnergy,Game.rooms[MyRoom].energyCapacityAvailable,true);
                 twoLoop = true;
             }
-
+    
          }
         }
-
+    
     //Game.profiler.email(1800);
     //Game.profiler.profile(10);
-
+    
     var MainLoop = Game.cpu.getUsed();
         if(!Memory.CpuStats){
             Memory.CpuStats = {
                 TickCounter: 0,
                 AggregatedAverage: MainLoop,
-
+                
             };
         }
-
+        
     if(Memory.CpuStats.TickCounter > LogLength){
         console.log('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.');
         Game.notify('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.', 720);
@@ -494,7 +480,7 @@ module.exports.loop = function () {
         Game.profiler.profile(5);
     }else{
         Memory.CpuStats.AggregatedAverage = (Memory.CpuStats.AggregatedAverage + MainLoop)/2;
-
+        
     }
     Memory.CpuStats.TickCounter += 1;
 

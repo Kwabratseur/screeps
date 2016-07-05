@@ -4,7 +4,7 @@ var roleTrucker = {
     run: function(creep) {
         var buildInfra = false;
         var Moveto = require('move.to');
-
+        
         if(creep.memory.harvesting && creep.carry.energy == creep.carryCapacity) {
             creep.memory.harvesting = false;
 	    }
@@ -12,10 +12,10 @@ var roleTrucker = {
 	        creep.memory.harvesting = true;
 	    }
 	    if(creep.memory.harvesting) {
-
-	        if(creep.memory.destRoom != creep.room.name){
-	            Moveto.move(creep,Game.flags[creep.memory.Flag]);
-	        }else if(creep.memory.destRoom == creep.room.name){
+	        
+	        if(creep.memory.HarvestTile != creep.room.name){
+	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
+	        }else if(creep.memory.HarvestTile == creep.room.name){
     	        var drops = creep.room.find(FIND_DROPPED_RESOURCES);
     	        var c = 0;
     	        for(i = 1; i < drops.length; i++ ) {
@@ -26,12 +26,12 @@ var roleTrucker = {
     	        if(drops.length){
         	        Moveto.move(creep,drops[c]);
         	        creep.pickup(drops[c]);
-    	        }
+    	        } 
 	        }
 	    }
-
+        
         else {//
-
+            
             var RoomVar = 0;
             for(var name in Game.spawns){
         		var SpawnName = name;
@@ -51,12 +51,12 @@ var roleTrucker = {
                     var Site = false;
                     var Sites = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
                     creep.room.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_ROAD } })
-                        .forEach((ext) => {
+                        .forEach((ext) => {  
                                             if(creep.pos.inRangeTo(ext, 0)){
                                                 Road = true;
                                             }
                         });
-                    creep.room.find(FIND_MY_CONSTRUCTION_SITES).forEach((ext) => {
+                    creep.room.find(FIND_MY_CONSTRUCTION_SITES).forEach((ext) => {  
                                             if(creep.pos.inRangeTo(ext, 0)){
                                                 Site = true;
                                             }
@@ -93,7 +93,7 @@ var roleTrucker = {
                 }
              /*if(container.length == 0   ) {
                         Game.createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
-
+                        
                     }*/
         }
 	}

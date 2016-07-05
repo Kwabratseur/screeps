@@ -1,11 +1,9 @@
-
+var Transfer = require('action.transfer');
 
 var roleEnergyMon = {
 
     run: function(creep,No) {
         var Moveto = require('move.to');
-        var Transfer = require('action.transfer');
-        
         var spawn = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (structure.structureType == STRUCTURE_SPAWN ) && structure.energy < structure.energyCapacity;
@@ -48,7 +46,7 @@ var roleEnergyMon = {
             }
         }else if(_.sum(storages.store) > 0){ //if storage is not empty
             if(creep.carry.energy == 0){ // if creep is empty
-                Transfer.from(creep,creep.room.name,"Storages",RESOURCE_ENERGY,'zero');
+                Transfer.from(creep,creep.room.name,"Storages",RESOURCE_ENERGY,'unfilled');
             }else if(spawn.length > 0){ //if spawn is not full
                 if(creep.transfer(spawn[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //deposit @ spawn
                     Moveto.move(creep,spawn[0]);
