@@ -1,4 +1,4 @@
-
+//completely get rid of this, will be handled central with flagmonitor + manager
 var farmTile = {
 
 

@@ -22,10 +22,8 @@ Memstructures.run = function(MemoryPointer){ //use this function to retrieve bui
         }
     }
         return returnresult;
-    
+
     //console.log('returned:'+(returnresult == false));
-   
-    
 }
 
 Memstructures.reset = function(MyRoom){
@@ -34,10 +32,10 @@ Memstructures.reset = function(MyRoom){
 
 Memstructures.set = function(MyRoom,SpawnName2){ //use this function to retrieve buildings from a type from memory. Like this var test = Memstructures(Memory.rooms[MyRoom].RoomInfo.Sources);
             var sourcess = [];
-            var towerss = [];   
-            var storagess = [];   
-            var containerss = [];   
-            var linkss = [];   
+            var towerss = [];
+            var storagess = [];
+            var containerss = [];
+            var linkss = [];
             var extensionss = [];
             var labss = [];
             var wallss = [];
@@ -46,17 +44,17 @@ Memstructures.set = function(MyRoom,SpawnName2){ //use this function to retrieve
             var extractorss = [];
             var terminalss = [];
             var spawnss = [];
-            
+
             var sources = Game.rooms[MyRoom].find(FIND_SOURCES);
             var towers = Game.rooms[MyRoom].find(FIND_MY_STRUCTURES, {
-                            filter: { structureType: STRUCTURE_TOWER 
+                            filter: { structureType: STRUCTURE_TOWER
                             }
                     });
             var storages = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
                             filter: (structure) => {
                                 return (structure.structureType == STRUCTURE_STORAGE );
                             }
-                    });    
+                    });
             var containers = Game.rooms[MyRoom].find(FIND_STRUCTURES, {
                             filter: (structure) => {
                                 return (structure.structureType == STRUCTURE_CONTAINER );
@@ -107,15 +105,15 @@ Memstructures.set = function(MyRoom,SpawnName2){ //use this function to retrieve
                                 return (structure.structureType == STRUCTURE_SPAWN );
                             }
                     });
-                    
+
             for(var i in sources){ //iterate through object and stor Id's for Game.getObjedtById();
                 sourcess.push(sources[i].id);
             }
-            
+
             for(var i in towers){ //iterate through object and stor Id's for Game.getObjedtById();
                 towerss.push(towers[i].id);
             }
-            
+
             for(var i in storages){ //iterate through object and stor Id's for Game.getObjedtById();
                 storagess.push(storages[i].id);
             }
@@ -123,7 +121,7 @@ Memstructures.set = function(MyRoom,SpawnName2){ //use this function to retrieve
             for(var i in containers){ //iterate through object and stor Id's for Game.getObjedtById();
                 containerss.push(containers[i].id);
             }
-            
+
             for(var i in links){ //iterate through object and stor Id's for Game.getObjedtById();
                 linkss.push(links[i].id);
             }
@@ -155,7 +153,7 @@ Memstructures.set = function(MyRoom,SpawnName2){ //use this function to retrieve
             for(var i in terminals){ //iterate through object and stor Id's for Game.getObjedtById();
                 terminalss.push(terminals[i].id);
             }
-            
+
             for(var i in Roomspawns){ //iterate through object and stor Id's for Game.getObjedtById();
                 spawnss.push(Roomspawns[i].id);
             }

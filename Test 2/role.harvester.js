@@ -14,19 +14,30 @@ var roleHarvester = {
           creep.memory.destRoom = creep.memory.roomTo;
 	        creep.memory.harvesting = true;
 	    }
-
+      /*for(var i in Jobs){
+        console.log(Jobs[i](creep));
+      }*/ //Nice! creep jobs can be accesed as name like this. let's try!
       if(creep.memory.destRoom != creep.room.name){
           Moveto.move(creep,Game.flags[creep.memory.flag]);
       } else{//everything from here should be put in a creepJob module jobname: Gather, preferavly split it in two.
     	    if(creep.memory.harvesting) {
-              Jobs.GatherEnergy(creep);
+              Jobs["GatherEnergy"](creep); // <- this allows the AI to pick a Job for a creep of certain type.
+              //by putting the JobName in a variable in the function. Or in creep-memory.
+              //This may be better, in this way the AI only needs to edit the creep memory
+              //for changing it's behaviour.
+              //also the creep-body may be standardized further in this manor.
+              //this file is a good example for that
           }
 
           else {
-              Jobs.FillStructures(creep,buildInfra);
+              Jobs["FillStructures"](creep,buildInfra); //mind different input variables per job.
 	          }
           }
         }
 };
 
 module.exports = roleHarvester;
+//jobs: GatherEnergy, FillStructures, (old harvester)
+//jobs: GetEnergy, FillStructures, EmptyLink (old EnergyManager)
+//jobs: GatherEnergy, FillStructures + RoomFrom, RoomTo -> old trucker
+//jobs: GetEnergy, FillStructures + RoomFrom, RoomTo -> equalizer, transport between rooms

@@ -13,3 +13,5 @@ var roleWorker = {
 };
 
 module.exports = roleWorker;
+//jobs: MineEnergy (old worker, name it farmer!)
+//jobs: MineEnergy + RoomFrom, RoomTo -> old farmer

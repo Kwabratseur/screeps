@@ -20,30 +20,27 @@ var roleBuilder = {
         } else{
 	    if(creep.memory.building) {
 
-	          var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-            if(targets.length) {
-                if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                    Moveto.move(creep,targets[0]);
-                }
-            }else{
-              Jobs.Repair(creep);
-	    }
-    }
+            if(Jobs['Build'](creep)) {
+            }else if(Jobs['Repair'](creep)){
+	          }else if(Jobs['Upgrade'](creep)){
+            }
+    }else{
 	        if(Game.flags.Dismantle != undefined && No == 0){
   	            if(creep.pos.inRangeTo(Game.flags.Dismantle,6)){
-  	               Jobs.attack(creep);
+  	               Jobs['Attack'](creep);
 	            }else{
 	                Moveto.move(creep,Game.flags.Dismantle.pos);
 	            }
 	        }else{
 	            if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
-                Jobs.GetEnergy(creep);
+                Jobs['GetEnergy'](creep);
 	            }
 	        }
-
-                //creep.drop(RESOURCE_ENERGY) //drop i u want it to help start
-
+        }
     }
 }};
-
 module.exports = roleBuilder;
+
+//jobs: Build, Repair, Attack, GetEnergy (old builder)(shift through Jobs??)
+//jobs: Upgrade, GetEnergy (old upgrader)
+//jobs: Build, GatherEnergy + RoomFrom & RoomTo == claimed/non-owned room(old external builder)

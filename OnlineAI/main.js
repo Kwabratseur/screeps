@@ -127,35 +127,6 @@ module.exports.loop = function () {
                 //energyCenter(Ecenter);
                 Memory.rooms[MyRoom].Eticks -= 1;
         }
-
-
-        /*console.log((roads == false));
-        console.log((links == false));
-        console.log(((links == false && links[0] != null) || 
-                     (containers == false && containers[0] != null)|| 
-                     (towers == false && towers[0] != null)|| 
-                     (storages == false && storages[0] != null)|| 
-                     (extensions == false && extensions[0] != null)|| 
-                     (walls == false && walls[0] != null)|| 
-                     (ramparts == false && ramparts[0] != null)|| 
-                     (roads == false && roads[0] != null))&&
-                     (Memory.rooms[MyRoom] != undefined ||
-                     Memory.rooms[MyRoom].RoomInfo != undefined));*/
-                     
-        /*if(((links == false && links != null) || 
-             (containers == false && containers != null)|| 
-             (towers == false && towers != null)|| 
-             (storages == false && storages!= null)|| 
-             (extensions == false && extensions != null)|| 
-             (walls == false && walls != null)|| 
-             (ramparts == false && ramparts != null)|| 
-             (roads == false && roads != null))&&
-             (Memory.rooms[MyRoom] != undefined ||
-             Memory.rooms[MyRoom].RoomInfo != undefined)){
-                 
-            console.log("ObjectId mismatch, resetting memory for: "+MyRoom)
-            Mem.reset(MyRoom); 
-        } //checks for destroyed buildings, if true: reset memory of that room.*/
         
         function energyCenter(FlagPos){ //change loop order
             //console.log(FlagPos.pos.x);

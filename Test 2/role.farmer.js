@@ -4,7 +4,7 @@ var roleFarmer = {
     run: function(creep,No) {
         var Moveto = require('move.to');
         if(creep.memory.destRoom != creep.room.name){
-	            Moveto.move(creep,Game.flags[creep.memory.Flag]);
+	            Moveto.move(creep,Game.flags[creep.memory.flag]);
 	      }else{
             var sources = creep.room.find(FIND_SOURCES);
 

@@ -8,7 +8,7 @@ var roleArmy = {
 	            Moveto.move(creep,Game.flags[creep.memory.flag]);
 	    }else{
 	        if(creep.pos.inRangeTo(Game.flags[creep.memory.flag],20)){
-                jobs.attack(creep);
+                jobs.Attack(creep);
               }else{
 	            Moveto.move(creep,Game.flags[creep.memory.flag].pos);
 	        }
@@ -17,3 +17,5 @@ var roleArmy = {
 };
 
 module.exports = roleArmy;
+//old defender Jobs['Attack'](creep);
+//make rangers through this module and maybe healers.

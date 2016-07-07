@@ -54,13 +54,14 @@ jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Wil
   }
 }
 
-
 jobs.Build = function(creep){
   var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
   if(targets.length) {
       if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
           Moveto.move(creep,targets[0]);
+
       }
+      return true;
   }else{
     return false;
   }
@@ -79,7 +80,9 @@ jobs.Repair = function(creep){
   if(numberDamaged > 10){
       if(creep.repair(ClosestDamagedStructure) == ERR_NOT_IN_RANGE) {
           Moveto.move(creep,ClosestDamagedStructure);
+
       }
+      return true;
       }else{
         return false;
       }
@@ -88,7 +91,12 @@ jobs.Repair = function(creep){
 jobs.Upgrade = function(creep){
   if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
       Moveto.move(creep,creep.room.controller);
+      return true;
   }
+  else{
+    return false;
+  }
+
 }
 
 jobs.Attack = function(creep){
@@ -111,7 +119,7 @@ jobs.Attack = function(creep){
   }
 }
 
-jobs.GetEnergy = function(creep){
+jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensions+spawns. Needs conditional to block picking up.
   var storages = creep.room.storage;
 
   var extensions = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Extensions);
@@ -128,5 +136,23 @@ jobs.GetEnergy = function(creep){
             }
     }
 }
+
+jobs.EmptyLink = function(creep){
+  var Links = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Links);
+  var linkSend = creep.pos.findInRange(Links, 6)[0];
+  var Target = linksend.pos.findInRange(FIND_MY_STRUCTURES, 2)[0]
+  if(link != undefined && link.energy > 0){
+      if(creep.carry.energy == 0){ // if creep is empty
+          if(link.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+              Moveto.move(creep,link);
+          }
+      }else{
+        if(creep.transfer(Target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+            Moveto.move(creep,Target);
+        }
+      }
+    }
+}
+
 
 module.exports = jobs;
