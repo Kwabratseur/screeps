@@ -42,21 +42,21 @@ Transfer.FilterObjects = function(creep,MyRoom,object,resource,n){
         break;
         case 'unfilled':
             if(object == 'Extensions' || object == 'Spawns' || object == 'Links' || object == 'Towers'){
-                temp = _.filter(temp1, function(structure){return structure.energy < structure.energyCapacity; }); 
+                temp = _.filter(temp1, function(structure){return structure.energy < structure.energyCapacity; });
             }else{
                 temp = _.filter(temp1, function(structure){return structure.store[RESOURCE_ENERGY] < structure.storeCapacity; });
             }
         break;
         case 'filled':
             if(object == 'Extensions' || object == 'Spawns' || object == 'Links' || object == 'Towers'){
-                temp = _.filter(temp1, function(structure){return structure.energy > 0; }); 
+                temp = _.filter(temp1, function(structure){return structure.energy > 0; });
             }else{
                 temp = _.filter(temp1, function(structure){return structure.store[RESOURCE_ENERGY] > 50; });
             }
         break;
     }
     return creep.pos.findClosestByRange(temp);
-    
+
 }
 
                 //temp = _.filter(temp1, function(structure){return structure.energy < structure.energyCapacity; }); //returns undefined if not true
@@ -77,19 +77,9 @@ Transfer.from = function(creep,MyRoom,object,resource = RESOURCE_ENERGY,n = 'zer
 	if(!temp){
 	    return true;
 	}else{
-    	switch(object) {// call looks like: Transfer.from(creep,creep.room.name,"Storages",RESOURCE_ENERGY,0);
-    		case 'Containers': case 'Storages': case 'Labs': case 'Controllers':
-    		    if(temp.transfer(creep, resource) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                    Moveto.move(creep,temp);
-                }
-    		break;
-    
-    		case 'Extensions': case 'Spawns': case 'Links': case 'Towers':
-                if(temp.transferEnergy(creep) == ERR_NOT_IN_RANGE){
-                    Moveto.move(creep,temp)
-                }
-    	    break;
-    	}
+    	if(creep.withdraw(temp, resource) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+          Moveto.move(creep,temp);
+      }
 	}
 }
 

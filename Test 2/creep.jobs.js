@@ -33,7 +33,7 @@ jobs.FillStructures = function(creep,buildInfra){ //fill structures
 jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Will drop resources in link or container if possible
   var Containers = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Containers);
   var containers = creep.pos.findClosestByRange(Containers);
-  if(containers != undefined && creep.pos != containers.pos && Math.abs(creep.pos.x-containers.pos.x) < 3 && Math.abs(creep.pos.y-containers.pos.y) < 3){
+  if(Containers[0] != undefined && creep.pos != containers.pos && Math.abs(creep.pos.x-containers.pos.x) < 3 && Math.abs(creep.pos.y-containers.pos.y) < 3){
       Moveto.move(creep,containers);
   }if(creep.harvest(Game.getObjectById(creep.memory.sourceID)) == ERR_NOT_IN_RANGE) {
           Moveto.move(creep,Game.getObjectById(creep.memory.sourceID));
@@ -112,6 +112,10 @@ jobs.Attack = function(creep){
     if(creep.dismantle(hostileBuildings) == ERR_NOT_IN_RANGE) {
         Moveto.move(creep,hostileBuildings);
     }
+  }else if(creep.getActiveBodyparts(HEAL) != 0){
+    if(creep.heal(target) == ERR_NOT_IN_RANGE) {
+        Moveto.move(creep,target);
+    }
   }else{
     if(creep.attack(hostileBuildings) == ERR_NOT_IN_RANGE) {
         Moveto.move(creep,hostileBuildings);
@@ -130,10 +134,11 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
                     Moveto.move(creep,storages);
                }
 
-    }else if(creep.room.energyAvailable > creep.room.energyCapacityAvailable/2){
+    }else if((creep.room.energyAvailable > creep.room.energyCapacityAvailable/2) && Memory.WithdrawLight == true){
         if(Sources[0].transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
                 Moveto.move(creep,Sources[0]);
             }
+
     }
 }
 

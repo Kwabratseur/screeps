@@ -56,6 +56,10 @@ module.exports.loop = function () {
     var oneLoop = false;
     var twoLoop = false;
     
+    
+
+
+    //
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
 		var SpawnName = name;
         var MyRoom = Game.spawns[SpawnName].room.name;    //Then offcourse make everything depend from variable MyRoom(mostly the case)
@@ -66,7 +70,7 @@ module.exports.loop = function () {
             Mem.set(MyRoom,SpawnName);
             console.log('Setting memory for room: '+MyRoom);
         }
-        
+
 
         var containers = Mem.run(Memory.rooms[MyRoom].RoomInfo.Containers);
         var towers = Mem.run(Memory.rooms[MyRoom].RoomInfo.Towers);
@@ -77,6 +81,9 @@ module.exports.loop = function () {
         var walls = Mem.run(Memory.rooms[MyRoom].RoomInfo.Walls);
         var ramparts = Mem.run(Memory.rooms[MyRoom].RoomInfo.Ramparts);
         var roads = Mem.run(Memory.rooms[MyRoom].RoomInfo.Roads);
+
+        var Sites = Game.rooms[MyRoom].find(FIND_CONSTRUCTION_SITES);
+        var structs = Game.rooms[MyRoom].find(FIND_STRUCTURES);
         //extractors = Mem.run(Memory.rooms[MyRoom].RoomInfo.Extractors);
         //terminals = Mem.run(Memory.rooms[MyRoom].RoomInfo.Terminals);    
         //labs = Mem.run(Memory.rooms[MyRoom].RoomInfo.Labs);
@@ -250,9 +257,8 @@ module.exports.loop = function () {
         if(towers.length > 0){
             var damagedStructures = roads.concat(walls,ramparts,containers);
             var structHp = Math.pow((10-Game.rooms[MyRoom].controller.level),(10-Game.rooms[MyRoom].controller.level)/2)
-            //if(!damagedStructures){
            // console.log(damagedStructures);
-            var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < structure.hitsMax/structHp); });
+            var damagedStructures = _.filter(damagedStructures, function(structure){return ((structure != null) && (structure.hits < structure.hitsMax/structHp)); });
             
             var c = 0;
             for (i = 0; i < damagedStructures.length; i++){
@@ -413,6 +419,17 @@ module.exports.loop = function () {
                 }
             }
         }
+        if((!Memory.rooms[MyRoom].Sites || (Memory.rooms[MyRoom].Sites != Sites.length)) && (Sites.length > 0)){
+            Memory.rooms[MyRoom].Sites = Sites.length;
+            console.log('Building structure /making build queue in room'+MyRoom+', BuildingSites:'+Sites.length);
+            Mem.reset(MyRoom);
+        }
+
+        if(!Memory.rooms[MyRoom].structs || (Memory.rooms[MyRoom].structs != structs.length)){
+            Memory.rooms[MyRoom].structs = structs.length;
+            console.log('Building Destroyed/built in '+MyRoom+', Buildings:'+structs.length);
+            Mem.reset(MyRoom);
+        }
         if(Game.flags.FarmFlag != undefined && !oneLoop){
             startCpu = Game.cpu.getUsed();
             if(Game.rooms[MyRoom].energyCapacityAvailable > 1000){
@@ -463,6 +480,19 @@ module.exports.loop = function () {
     }else{
         console.log('TickTime: '+Game.time+' ;Used CPU: '+MainLoop+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
     }
+   /* var flagarray = [];
+    for(var flags in Game.flags){
+      if(Game.rooms[flags] != undefined && ((Game.rooms[flags].controller.reservation != undefined && Game.rooms[flags].controller.reservation.username == 'Kwabratseur') || Game.rooms[flags].controller.level == 0)){
+        console.log(Game.rooms[flags]);
+        flagarray.unshift(Game.rooms[flags].name);
+        if(Game.rooms[flags].controller.my){
+
+        }
+
+        }
+      }
+      Memory.roomdb = flagarray;*/
+    
     });
     //Game.profiler.profile(10);
 }

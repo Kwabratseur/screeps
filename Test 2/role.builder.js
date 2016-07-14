@@ -7,6 +7,9 @@ var roleBuilder = {
         var Jobs = require('creep.jobs')
         var BufferThreshold = 10000;
 
+        if(creep.memory.building == undefined){
+          creep.memory.building = true;
+        }
 	    if(creep.memory.building && creep.carry.energy == 0) {
           creep.memory.destRoom = creep.memory.roomFrom
           creep.memory.building = false;

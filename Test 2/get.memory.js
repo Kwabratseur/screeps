@@ -14,7 +14,7 @@ Memstructures.run = function(MemoryPointer){ //use this function to retrieve bui
     var returnresult = [];
     for(i in MemoryPointer){
         returnresult.push(Game.getObjectById(MemoryPointer[i]));
-        if(Game.getObjectById(MemoryPointer[i]) == undefined && MemoryPointer.length > 0){
+        if(Game.getObjectById(MemoryPointer[i]) == undefined && MemoryPointer.length == 0){
             console.log("Causing error: "+MemoryPointer[0]);
             console.log('error @ '+Game.getObjectById(MemoryPointer[i]));
             returnresult = false;
@@ -28,6 +28,34 @@ Memstructures.run = function(MemoryPointer){ //use this function to retrieve bui
 
 Memstructures.reset = function(MyRoom){
     delete Memory.rooms[MyRoom].RoomInfo;
+}
+
+Memstructures.resetroomcreep = function(MyRoom){
+    delete Memory.rooms[MyRoom].CreepInfo;
+}
+
+Memstructures.setroomcreep = function(MyRoom,farmers,transporters,workers,army,P1,P2,P3,P4){
+
+  Memory.rooms[MyRoom].creepInfo ={
+    Farmers: [farmers,P1],
+    Transporters: [transporters,P2],
+    Workers: [workers,P3],
+    Army: [army,P4]
+  };
+
+}
+
+Memstructures.AddtoQueue = function(priority,layout,role,destination,To,From,Flag,jobarray){
+  var creep = [priority,layout,role,destination,To,From,Flag,jobarray];
+  if(Memory.SpawnQueue == undefined){
+    Memory.SpawnQueue = [[]];
+  }
+  Memory.SpawnQueue.unshift(creep);
+  Memory.SpawnQueue.sort()
+}
+
+Memstructures.ReturnCreep = function(){
+  return Memory.SpawnQueue.shift()
 }
 
 Memstructures.set = function(MyRoom,SpawnName2){ //use this function to retrieve buildings from a type from memory. Like this var test = Memstructures(Memory.rooms[MyRoom].RoomInfo.Sources);

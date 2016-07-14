@@ -7,8 +7,9 @@ var roleArmy = {
         if(creep.memory.destRoom != creep.room.name){
 	            Moveto.move(creep,Game.flags[creep.memory.flag]);
 	    }else{
+          creep.memory.destRoom = creep.memory.roomTo;
 	        if(creep.pos.inRangeTo(Game.flags[creep.memory.flag],20)){
-                jobs.Attack(creep);
+                Jobs.Attack(creep);
               }else{
 	            Moveto.move(creep,Game.flags[creep.memory.flag].pos);
 	        }

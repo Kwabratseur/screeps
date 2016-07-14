@@ -1,4 +1,4 @@
-var roleHarvester = {
+var roleTransporter = {
 
     /** @param {Creep} creep **/
     run: function(creep,No,buildInfra) {
@@ -36,7 +36,8 @@ var roleHarvester = {
         }
 };
 
-module.exports = roleHarvester;
+module.exports = roleTransporter;
+
 //jobs: GatherEnergy, FillStructures, (old harvester)
 //jobs: GetEnergy, FillStructures, EmptyLink (old EnergyManager)
 //jobs: GatherEnergy, FillStructures + RoomFrom, RoomTo -> old trucker

@@ -1,22 +1,18 @@
 var roleFarmer = {
 
     /** @param {Creep} creep **/
-    run: function(creep,No) {
+    run: function(creep) {
         var Moveto = require('move.to');
+        var Jobs = require('creep.jobs');
         if(creep.memory.destRoom != creep.room.name){
-	            Moveto.move(creep,Game.flags[creep.memory.flag]);
+	            Moveto.move(creep,Game.flags[creep.memory.Flag]);
 	      }else{
-            var sources = creep.room.find(FIND_SOURCES);
-
-            if(creep.harvest(sources[No]) == ERR_NOT_IN_RANGE) {
-                    Moveto.move(creep,sources[No]);
-                }
-            else {
-                //console.log(creep.harvest(Game.getObjectById(creep.memory.sourceID)));
-                creep.drop(RESOURCE_ENERGY);
-            }
-	    }
-    }
+            creep.memory.destRoom = creep.memory.roomTo;
+            Jobs.MineEnergy(creep)
+        }
+  }
 };
 
 module.exports = roleFarmer;
+//jobs: MineEnergy (old worker, name it farmer!)
+//jobs: MineEnergy + RoomFrom, RoomTo -> old farmer

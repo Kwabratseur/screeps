@@ -8,47 +8,47 @@ function CreepType(Creepy,n,b,c){
         if((n % 2) == 0){ BodyPart = CARRY;}
         else{ BodyPart = MOVE; }
     break;
-    
+
     case'Build':
         if(c == 0){ BodyPart = CARRY; }
         if(c == 1 && (n % 3) == 1){ BodyPart = MOVE; } // this one will be added twice in a row of 9
         if(c == 2){ BodyPart = WORK; }
     break;
-    
+
     case'Work':
         if(b == 0){ BodyPart = WORK; }
         if(b == 1 && (n % 2) == 1){ BodyPart = MOVE; } // this one will be added twice in a row of 9
     break;
-    
+
     case'Claim':
         if(b == 0){ BodyPart = CLAIM; }
         if(b == 1 && (n%3) == 1){ BodyPart = MOVE; }
     break;
-    
+
     case'Heal':
         if((n % 2) == 0){ BodyPart = HEAL; }
         else{ BodyPart = MOVE; }
     break;
-    
+
     case'Army':
-        if(c == 0){ 
+        if(c == 0){
             if(Math.random()*10 < 3 ){ BodyPart = TOUGH; }
             else{ BodyPart = ATTACK; }
         }
         if(c == 1){ BodyPart = MOVE; }// this one will be added twice in a row of 9
-        if(c == 2){ 
+        if(c == 2){
             if(Math.random()*10 < 3 ){ BodyPart = TOUGH; }
             else{ BodyPart = ATTACK; }
         }
     break;
-    
+
     case'Ranged_Army':
-        if(c == 0){ 
+        if(c == 0){
             if(Math.random()*10 < 3 ){ BodyPart = TOUGH; }
             else{ BodyPart = RANGED_ATTACK; }
         }
         if(c == 1){ BodyPart = MOVE; }// this one will be added twice in a row of 9
-        if(c == 2){ 
+        if(c == 2){
             if(Math.random()*10 < 3 ){ BodyPart = TOUGH; }
             else{ BodyPart = RANGED_ATTACK; }
         }
@@ -63,11 +63,11 @@ function CreepTypeInit(Creepy,BodySize){
     case'Transport':
         BodyParts =[MOVE,CARRY,MOVE];
     break;
-    
+
     case'Build':
         BodyParts =[CARRY,MOVE,WORK,CARRY];
     break;
-    
+
     case'Work':
         if(BodySize > 3){
             BodyParts =[WORK,MOVE,WORK,WORK,CARRY,CARRY];
@@ -75,19 +75,19 @@ function CreepTypeInit(Creepy,BodySize){
             BodyParts =[WORK,MOVE,WORK];
         }
     break;
-    
+
     case'Claim':
         BodyParts =[CLAIM,MOVE,CLAIM];
     break;
-    
+
     case'Heal':
         BodyParts =[HEAL,MOVE,HEAL];
     break;
-    
+
     case'Army':
         BodyParts =[TOUGH,MOVE,ATTACK,TOUGH];
     break;
-    
+
     case'Ranged_Army':
         BodyParts =[TOUGH,MOVE,RANGED_ATTACK,TOUGH];
     break;
@@ -111,6 +111,22 @@ Build.Cost = function(Layout){
     }
     return cost;
 }
+Build.Rebuild = function(Layout){
+    var GoodLayout = [];
+    var temp = 0;
+    for(var items in Layout) {
+        if(Layout[items] == 'move'){ temp = MOVE}
+        if(Layout[items] == 'carry'){ temp = CARRY;}
+        if(Layout[items] == 'work'){ temp = WORK; }
+        if(Layout[items] == 'attack'){ temp = ATTACK; }
+        if(Layout[items] == 'ranged_attack'){ temp = RANGED_ATTACK; }
+        if(Layout[items] == 'heal'){ temp = HEAL; }
+        if(Layout[items] == 'claim'){ temp = CLAIM; }
+        if(Layout[items] == 'tough'){ temp = TOUGH; }
+        GoodLayout.unshift(temp);
+    }
+    return GoodLayout;
+}
 //<<<<----!!! good way for building creeps with a for loop. This will scale them nicely if you know which parts are needed in which numbers
 
 function orderCost(Type){
@@ -126,7 +142,7 @@ function orderCost(Type){
     return cost;
 }
 
-Build.Layout = function(remainder,AvailableEnergy,BodySize,Type){ 
+Build.Layout = function(remainder,AvailableEnergy,BodySize,Type){
     var Layout = CreepTypeInit(Type,BodySize);
     var cost = 0;
     var target = AvailableEnergy;
@@ -137,9 +153,9 @@ Build.Layout = function(remainder,AvailableEnergy,BodySize,Type){
     }
     for(i = 0; i < BodySize; i++ ) {
         cost = Build.Cost(Layout);
-        if((cost > target) || (cost > AvailableEnergy)){   
-            Layout = Layout.slice(0,Layout.length-1); 
-            break; 
+        if((cost > target) || (cost > AvailableEnergy)){
+            Layout = Layout.slice(0,Layout.length-1);
+            break;
         }
         if(c > 2){ c = 0; }
         if(b > 1){ b = 0; }
