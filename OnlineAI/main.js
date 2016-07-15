@@ -308,7 +308,7 @@ module.exports.loop = function () {
         }
         
         if(defender.length < Nos[4] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
-            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/4,AvailableEnergy,20,"Army"); 
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/3,AvailableEnergy,20,"Army"); 
             var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'defender',Home: MyRoom});
             console.log('Spawning new defender: ' + newName+ ' in room '+MyRoom);
         }

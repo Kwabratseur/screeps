@@ -130,6 +130,7 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
   var spawns = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Spawns);
   var Sources = extensions.concat(spawns,extensions)
     if(storages != undefined){
+          jobs.EmptyLink(creep);
           if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
                     Moveto.move(creep,storages);
                }

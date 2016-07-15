@@ -2,9 +2,12 @@ var roleDefender = {
 
     /** @param {Creep} creep **/
     run: function(creep, Target) {
-        if(creep.attack(Target) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(Target, {reusePath: 50});
-            }
+        Target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        if(Target != undefined){
+            if(creep.attack(Target) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(Target, {reusePath: 50});
+                }
+        }
         else {
             if(Game.flags.Flag2 != undefined){
                 if(creep.pos.inRangeTo(Game.flags.Flag2,7)){

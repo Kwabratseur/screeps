@@ -31,7 +31,7 @@ Memstructures.reset = function(MyRoom){
 }
 
 Memstructures.resetroomcreep = function(MyRoom){
-    delete Memory.rooms[MyRoom].CreepInfo;
+    delete Memory.rooms[MyRoom].creepInfo;
 }
 
 Memstructures.setroomcreep = function(MyRoom,farmers,transporters,workers,army,P1,P2,P3,P4){

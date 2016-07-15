@@ -230,66 +230,66 @@ var Dupgrader = Math.round(0.3*(Memory.rooms[MyRoom].creepInfo.Workers[0] - Dwor
 var Dfixer = Memory.rooms[MyRoom].creepInfo.Workers[0] - (Dupgrader+Dworker);// remaining 70% is fixer, repairs stuff.
 console.log('Desired Gatherers:'+Dgatherer+', Distributors:'+Ddistributor+', Workers:'+Dworker+', Upgraders:'+Dupgrader+', Fixers:'+Dfixer);
 
-
-
  //manager will setup creep jobs and see if there is a possible better distribution
   for(var name in Game.creeps) {
       var creep = Game.creeps[name];
-      if(creep.memory.jobs){
-        if((jobGatherer[0] == creep.memory.jobs[0]) && (jobGatherer[jobGatherer.length] == creep.memory.jobs[creep.memory.jobs.length])){
-          gatherer +=1;
-        }if((jobMiner[0] == creep.memory.jobs[0]) && (jobMiner[jobMiner.length] == creep.memory.jobs[creep.memory.jobs.length])){
-          miner +=1;
-        }if((jobArmy[0] == creep.memory.jobs[0]) && (jobArmy[jobArmy.length] == creep.memory.jobs[creep.memory.jobs.length])){
-          army +=1;
-        }if((jobDistributor[0] == creep.memory.jobs[0]) && (jobDistributor[jobDistributor.length] == creep.memory.jobs[creep.memory.jobs.length])){
-          distributor +=1;
-        }if((jobUpgrader[0] == creep.memory.jobs[0]) && (jobUpgrader[jobUpgrader.length] == creep.memory.jobs[creep.memory.jobs.length])){
-          upgrader +=1;
-        }if((jobWorker[0] == creep.memory.jobs[0]) && (jobWorker[jobWorker.length] == creep.memory.jobs[creep.memory.jobs.length])){
-          worker +=1;
-        }if((jobFixer[0] == creep.memory.jobs[0]) && (jobFixer[jobFixer.length] == creep.memory.jobs[creep.memory.jobs.length])){
-          fixer +=1;
+      if(creep.memory.destRoom == MyRoom){
+        if(creep.memory.jobs){
+          if((jobGatherer[0] == creep.memory.jobs[0]) && (jobGatherer[jobGatherer.length] == creep.memory.jobs[creep.memory.jobs.length])){
+            gatherer +=1;
+          }if((jobMiner[0] == creep.memory.jobs[0]) && (jobMiner[jobMiner.length] == creep.memory.jobs[creep.memory.jobs.length])){
+            miner +=1;
+          }if((jobArmy[0] == creep.memory.jobs[0]) && (jobArmy[jobArmy.length] == creep.memory.jobs[creep.memory.jobs.length])){
+            army +=1;
+          }if((jobDistributor[0] == creep.memory.jobs[0]) && (jobDistributor[jobDistributor.length] == creep.memory.jobs[creep.memory.jobs.length])){
+            distributor +=1;
+          }if((jobUpgrader[0] == creep.memory.jobs[0]) && (jobUpgrader[jobUpgrader.length] == creep.memory.jobs[creep.memory.jobs.length])){
+            upgrader +=1;
+          }if((jobWorker[0] == creep.memory.jobs[0]) && (jobWorker[jobWorker.length] == creep.memory.jobs[creep.memory.jobs.length])){
+            worker +=1;
+          }if((jobFixer[0] == creep.memory.jobs[0]) && (jobFixer[jobFixer.length] == creep.memory.jobs[creep.memory.jobs.length])){
+            fixer +=1;
+          }
         }
-      }
 
 
-      if(creep.memory.role == 'harvester') {
-          roleTransporter.run(creep,AmountHarvMain,buildInfra);
-          AmountHarvMain+=1;
-          if(AmountHarvMain == 5){
-              AmountHarvMain =0;
+        if(creep.memory.role == 'harvester') {
+            roleTransporter.run(creep,AmountHarvMain,buildInfra);
+            AmountHarvMain+=1;
+            if(AmountHarvMain == 5){
+                AmountHarvMain =0;
+            }
+        }
+
+        if(creep.memory.role == 'farmer') {
+            if(AmountWorkMain < sources.length){
+                if(!creep.memory.sourceID){
+                  for(var i in sources){
+                    if(sources[i].pos.findInRange(FIND_MY_CREEPS,2).length < 1){
+                      creep.memory.sourceID = sources[i].id;
+                    }
+                  }
+
+                }
+                AmountWorkMain+=1;
+            roleFarmer.run(creep);
+          }else{
+            AmountWorkMain = 0;
+          }
+          }
+          if(creep.memory.role == 'worker') {
+
+              roleBuilder.run(creep,AvailableEnergy,BuildCounter,Sites);
+              BuildCounter +=1;
+          }
+
+          if(creep.memory.role == 'army') { // healers can be built with this rolename.
+              roleArmy.run(creep);
           }
       }
-
-      if(creep.memory.role == 'farmer') {
-          if(AmountWorkMain < sources.length){
-              if(!creep.memory.sourceID){
-                for(var i in sources){
-                  if(sources[i].pos.findInRange(FIND_MY_CREEPS,2).length < 1){
-                    creep.memory.sourceID = sources[i].id;
-                  }
-                }
-
-              }
-              AmountWorkMain+=1;
-          roleFarmer.run(creep);
-        }else{
-          AmountWorkMain = 0;
-        }
-        }
-        if(creep.memory.role == 'worker') {
-
-            roleBuilder.run(creep,AvailableEnergy,BuildCounter,Sites);
-            BuildCounter +=1;
-        }
-
-        if(creep.memory.role == 'army') { // healers can be built with this rolename.
-            roleArmy.run(creep);
-        }
   }
   if(Dgatherer != gatherer || Dworker != worker){
-    MonMan.Redistribute(Dgatherer,Ddistributor,Dworker,Dupgrader,Dfixer);
+    MonMan.Redistribute(MyRoom,Dgatherer,Ddistributor,Dworker,Dupgrader,Dfixer);
   }
   console.log('Total Gatherers:'+gatherer+', Distributors:'+distributor+', Workers:'+worker+', Upgraders:'+upgrader+', Fixers:'+fixer);
   //check the room job mem with creep job mem.
@@ -298,49 +298,148 @@ console.log('Desired Gatherers:'+Dgatherer+', Distributors:'+Ddistributor+', Wor
 
 }
 
+MonMan.EditDestination = function(RoomTo,Amount,Role){
+  var WorkingCreeps = 0;
+  var CreepDemand = 0;
+  for(var room in Memory.rooms){
+    CreepDemand += (Memory.rooms[room].creepInfo.Farmers[0]+Memory.rooms[room].creepInfo.Transporters[0]+Memory.rooms[room].creepInfo.Workers[0]+Memory.rooms[room].creepInfo.Army[0])
+    for(var name in Memory.creeps){
+      if(creep.memory.destRoom == room){
+        WorkingCreeps +=1;
+        creep = Game.creeps[name];
+        //if(creep.memory.destRoom == RoomTo)
+      }
+    }
+  }
+  if((WorkingCreeps > CreepDemand*0.8) && (Amount > 0)){
+    for(var name in Memory.creeps){
+      if(creep.memory.role == Role){
+        creep.memory.roomTo == RoomTo;
+        creep.memory.destRoom == RoomTo;
+        Amount -= 1;
+      }
+    }
+    console.log('Working creeps:'+WorkingCreeps+' CreepDemand:'+CreepDemand);
+  }
+  if(Amount == 0){
+    return true;
+  }else{
+    return false;
+  }
+}
+
 MonMan.TerritoryManager = function(){
   //console.log(Memory.roomdb);
   for(var i in Memory.roomdb){
     var rooms = Memory.roomdb[i];
-    if(!rooms[1]){
-      console.log('scouting possible territory, room '+rooms[0]);
-    }
-    //if(Game.rooms[flags] != undefined && ((Game.rooms[flags].controller.reservation != undefined && Game.rooms[flags].controller.reservation.username == 'Kwabratseur') || Game.rooms[flags].controller.level == 0)){
-        //flagarray.unshift(Game.rooms[flags].name);
-      //if(Game.rooms[flags].controller.my){
-
-      //}
-
-      //}
-    }
-
-}
-
-MonMan.Redistribute = function(Gatherer,Distributor,Worker,Upgrader,Fixer){
-  for(var name in Game.creeps) {
-      var creep = Game.creeps[name];
-      if(creep.memory.role == 'harvester') {
-      if(Gatherer != 0){
-        creep.memory.jobs = jobGatherer;
-        Distributor -= 1;
-      }else if(Distributor != 0){
-        creep.memory.jobs = jobDistributor;
-        Gatherer -=1;
+    if(!rooms[1] && rooms[2] != 2){
+      if(MonMan.EditDestination(rooms[0],1,'Army')){
+        //change defender to scout
+      }else{
+        //create scout
       }
-      }
-
-      if(creep.memory.role == 'worker') {
-        if(Upgrader != 0){
-          creep.memory.jobs = jobUpgrader;
-          Upgrader -= 1;
-        }else if(Fixer != 0){
-          creep.memory.jobs = jobFixer;
-          Fixer -=1;
-        }else if(Worker != 0){
-          creep.memory.jobs = jobWorker;
-          Worker -=1;
+      //reset a defending creep to scout the room
+      //*******write a function that checks room destinations, To's and From's. Change these as needed,
+      //*******provide the needed change as a parameter in the function
+      //console.log('scouting possible territory, room '+rooms[0]);
+      //make scouts for scouting these rooms
+      if(Game.rooms[rooms[0]] != undefined){
+        //if scouts arive
+        if(Game.rooms[room[0]].controller.level == 0){
+          //if controller is reserved or not owned
+          if(Game.rooms[room[0]].pos.findClosestByRange(FIND_HOSTILE_CREEPS)){
+            //clear the room, npc's/claim is present
+            Memory.roomdb[i] = [rooms[0],false,1]; //orange state, NPC's
+            //try to clear the room, count amount of killed creeps and don't exceed x.
+          }else{
+            Memory.roomdb[i] = [rooms[0],true,0]; //green state, send farmers
+            //else safe room, start farming and claiming
+            //place flag, send, monitor and maintain work force.
+            //****do this with a function that changes jobs/flags (same as above preferably)
+            //**** Try to delay spawning creeps in this way.
+          }
+        }else{
+          Memory.roomdb[i] = [rooms[0],false,2]; //red state, don't farm.
+          //room is controlled, leave it alone.
         }
       }
+    }
+    }
+}
+
+//this function puts all adjacent tiles to [roomtest] in roomdb memory. This will trigger
+MonMan.ConsiderTerritory = function(roomtest){
+  var alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+  var x = 'A';
+  var xNo = [];
+  var y = 'A';
+  var yNo = [];
+  var temp = [];
+  var c = 2;
+  var Territory = [];
+  for(i in alphabet){
+      if(roomtest.charAt(0) == alphabet[i]){
+          x = alphabet[i]
+      }
+      if(roomtest.charAt(2) == alphabet[i] || roomtest.charAt(3) == alphabet[i]){
+          y = alphabet[i]
+      }
+
+  }
+  temp = roomtest.split(y);
+  yNo[0] = temp[1];
+  yNo[1] = (yNo[0])++;
+  yNo[2] = (temp[1])-1;
+  xNo[0] = temp[0].split(x)[1];
+  xNo[1] = (xNo[0])-1;
+  xNo[2] = (xNo[0])++;
+
+  for(var i in yNo){
+    for(var j in xNo){
+
+      Territory.push(x+xNo[j]+y+yNo[i]);
+    }
+  }
+  console.log(Territory);
+  for(var i in Territory){
+  //
+    if(Game.rooms[Territory[i]] != undefined){
+        console.log(Territory[i]);
+        console.log(Game.rooms[Territory[i]].createFlag(25, 25, Territory[i]));
+        Memory.roomdb.unshift([Territory[i],true,0,0,0,0,0]); //0 == green, 1 == NPC's, orange 2== player, red. true means it is a farmed tile.
+    }else{
+      Memory.roomdb.unshift([Territory[i],false,0,0,0,0,0]);// 0 == scout if false, 1 == hostile, attack and farm
+    }
+  }
+}
+
+MonMan.Redistribute = function(MyRoom,Gatherer,Distributor,Worker,Upgrader,Fixer){
+  for(var name in Game.creeps) {
+      var creep = Game.creeps[name];
+      if(creep.memory.destRoom == MyRoom){
+        if(creep.memory.role == 'harvester') {
+        if(Gatherer != 0){
+          creep.memory.jobs = jobGatherer;
+          Distributor -= 1;
+        }else if(Distributor != 0){
+          creep.memory.jobs = jobDistributor;
+          Gatherer -=1;
+        }
+        }
+
+        if(creep.memory.role == 'worker') {
+          if(Upgrader != 0){
+            creep.memory.jobs = jobUpgrader;
+            Upgrader -= 1;
+          }else if(Fixer != 0){
+            creep.memory.jobs = jobFixer;
+            Fixer -=1;
+          }else if(Worker != 0){
+            creep.memory.jobs = jobWorker;
+            Worker -=1;
+          }
+        }
+    }
     }
 }
 

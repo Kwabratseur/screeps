@@ -22,61 +22,24 @@ module.exports.loop = function () {
     var oneLoop = false;
     var twoLoop = false;
 
-    if((Memory.tenCounter == undefined )|| (Memory.tenCounter < Game.time)){
+    MonMan.TerritoryManager();
+
+    function ConsiderTerritory(roomtest){
+
+}
+
+
+
+    if((Memory.tenCounter == undefined )|| (Memory.tenCounter < Game.time)){ //10 ticks counter
         Memory.tenCounter = Game.time + 10;
         MonMan.SpawnCreep();
     }
-    if((Memory.fiftyCounter == undefined) || (Memory.fiftyCounter < Game.time)){
+    if((Memory.fiftyCounter == undefined) || (Memory.fiftyCounter < Game.time)){ //50 ticks counter
         Memory.fiftyCounter = Game.time + 50;
     }
-
-    MonMan.TerritoryManager();
-    function ConsiderTerritory(roomtest){
-    var alphabet = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
-    var x = 'A';
-    var xNo = [];
-    var y = 'A';
-    var yNo = [];
-    var temp = [];
-    var c = 2;
-    var Territory = [];
-    for(i in alphabet){
-        if(roomtest.charAt(0) == alphabet[i]){
-            x = alphabet[i]
-        }
-        if(roomtest.charAt(2) == alphabet[i] || roomtest.charAt(3) == alphabet[i]){
-            y = alphabet[i]
-        }
-
+    if((Memory.hourCounter == undefined) || (Memory.hourCounter < Game.time)){ //hour counter
+        Memory.hourCounter = Game.time + (3600/2.5);
     }
-    temp = roomtest.split(y);
-    yNo[0] = temp[1];
-    yNo[1] = (yNo[0])++;
-    yNo[2] = (temp[1])-1;
-    xNo[0] = temp[0].split(x)[1];
-    xNo[1] = (xNo[0])-1;
-    xNo[2] = (xNo[0])++;
-
-    for(var i in yNo){
-      for(var j in xNo){
-        Territory.push(x+xNo[j]+y+yNo[i]);
-      }
-    }
-    console.log(Territory);
-    for(var i in Territory){
-    //
-      if(Game.rooms[Territory[i]] != undefined){
-          console.log(Territory[i]);
-          console.log(Game.rooms[Territory[i]].createFlag(25, 25, Territory[i]));
-          if(Game.rooms[Territory[i]].controller.owner.username == 'kwabratseur' || Game.rooms[Territory[i]].controller.level == 0)
-          Memory.roomdb.unshift([Territory[i],true]);
-      }else{
-        Memory.roomdb.unshift([Territory[i],false]);
-      }
-    }
-}
-
-    //ConsiderTerritory('W16S32');
 
 
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
@@ -85,6 +48,11 @@ module.exports.loop = function () {
         var AvailableEnergy = 0;
         AvailableEnergy = Game.rooms[MyRoom].energyAvailable;
         var buildInfra = false;
+
+        if((Memory.weekCounter == undefined) || (Memory.weekCounter < Game.time)){ //weekly counter
+            Memory.weekCounter = Game.time + ((3600*24*7)/2.5);
+            MonMan.ConsiderTerritory(MyRoom);
+        }//will only execute for first loop
 
         var EcenterName = MyRoom+'EnergyCenter';
 
@@ -306,6 +274,7 @@ module.exports.loop = function () {
     Memory.CpuStats.TickCounter += 1;
     if(Memory.roomdb == undefined){
       Memory.roomdb = [];
+      MonMan.ConsiderTerritory('W18S4');
     }
     var shortage = MainLoop-Game.cpu.limit;
     if(shortage > 0){
