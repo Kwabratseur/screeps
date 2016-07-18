@@ -19,24 +19,24 @@ var roleBuilder = {
 	        creep.memory.building = true;
 	    }
         if(creep.memory.destRoom != creep.room.name){
-            Moveto.move(creep,Game.flags[creep.memory.flag]);
+            Moveto.move(creep,Game.flags[creep.memory.destRoom]);
         } else{
 	    if(creep.memory.building) {
 
-            if(Jobs['Build'](creep)) {
-            }else if(Jobs['Repair'](creep)){
-	          }else if(Jobs['Upgrade'](creep)){
+            if(Jobs[creep.memory.jobs[0]](creep)) {
+            }else if(Jobs[creep.memory.jobs[1]](creep)){
+	          }else if(Jobs[creep.memory.jobs[2]](creep)){
             }
     }else{
 	        if(Game.flags.Dismantle != undefined && No == 0){
   	            if(creep.pos.inRangeTo(Game.flags.Dismantle,6)){
-  	               Jobs['Attack'](creep);
+  	               Jobs[creep.memory.jobs[3]](creep);
 	            }else{
 	                Moveto.move(creep,Game.flags.Dismantle.pos);
 	            }
 	        }else{
 	            if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
-                Jobs['GetEnergy'](creep);
+                Jobs[creep.memory.jobs[4]](creep);
 	            }
 	        }
         }

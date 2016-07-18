@@ -5,10 +5,10 @@ var roleFarmer = {
         var Moveto = require('move.to');
         var Jobs = require('creep.jobs');
         if(creep.memory.destRoom != creep.room.name){
-	            Moveto.move(creep,Game.flags[creep.memory.Flag]);
+	            Moveto.move(creep,Game.flags[creep.memory.destRoom]);
 	      }else{
             creep.memory.destRoom = creep.memory.roomTo;
-            Jobs.MineEnergy(creep)
+            Jobs[creep.memory.jobs[0]](creep);
         }
   }
 };

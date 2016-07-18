@@ -18,10 +18,10 @@ var roleTransporter = {
         console.log(Jobs[i](creep));
       }*/ //Nice! creep jobs can be accesed as name like this. let's try!
       if(creep.memory.destRoom != creep.room.name){
-          Moveto.move(creep,Game.flags[creep.memory.flag]);
+          Moveto.move(creep,Game.flags[creep.memory.destRoom]);
       } else{//everything from here should be put in a creepJob module jobname: Gather, preferavly split it in two.
     	    if(creep.memory.harvesting) {
-              Jobs["GatherEnergy"](creep); // <- this allows the AI to pick a Job for a creep of certain type.
+              Jobs[creep.memory.jobs[0]](creep); // <- this allows the AI to pick a Job for a creep of certain type.
               //by putting the JobName in a variable in the function. Or in creep-memory.
               //This may be better, in this way the AI only needs to edit the creep memory
               //for changing it's behaviour.
@@ -30,7 +30,7 @@ var roleTransporter = {
           }
 
           else {
-              Jobs["FillStructures"](creep,buildInfra); //mind different input variables per job.
+              Jobs[creep.memory.jobs[1]](creep,buildInfra); //mind different input variables per job.
 	          }
           }
         }

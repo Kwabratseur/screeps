@@ -153,17 +153,20 @@ Build.Layout = function(remainder,AvailableEnergy,BodySize,Type){
     }
     for(i = 0; i < BodySize; i++ ) {
         cost = Build.Cost(Layout);
+        c+=1;
+        b+=1;
         if(c > 2){ c = 0; }
         if(b > 1){ b = 0; }
         Layout.push(CreepType(Type,i,b,c));
-        c+=1;
-        b+=1;
-        if((cost > target) || (cost > AvailableEnergy)){
+        if((cost >= target) || (cost >= AvailableEnergy)){
             Layout = Layout.slice(0,Layout.length-1);
+            console.log('Cost:'+cost+' Layout: '+Layout+' Target:'+target+' Remainder:'+AvailableEnergy);
             break;
         }
 
+
     }
+
     return Layout.sort((a, b)=>orderCost(a)-orderCost(b));//(a, b)=>orderCost(a)-orderCost(b)
     //return Layout.sort();//ATTACK,MOVE,TOUGH(a, b) -> orderCost(a) < orderCost(b)
 }

@@ -22,16 +22,9 @@ module.exports.loop = function () {
     var oneLoop = false;
     var twoLoop = false;
 
-    MonMan.TerritoryManager();
-
-    function ConsiderTerritory(roomtest){
-
-}
-
-
-
     if((Memory.tenCounter == undefined )|| (Memory.tenCounter < Game.time)){ //10 ticks counter
         Memory.tenCounter = Game.time + 10;
+        //MonMan.TerritoryMonitor();
         MonMan.SpawnCreep();
     }
     if((Memory.fiftyCounter == undefined) || (Memory.fiftyCounter < Game.time)){ //50 ticks counter
@@ -41,7 +34,7 @@ module.exports.loop = function () {
         Memory.hourCounter = Game.time + (3600/2.5);
     }
 
-
+    //MonMan.TerritoryManager();
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
 		    var SpawnName = name;
         var MyRoom = Game.spawns[SpawnName].room.name;    //Then offcourse make everything depend from variable MyRoom(mostly the case)
@@ -117,6 +110,7 @@ module.exports.loop = function () {
                     console.log('setting up defenses and energycenter');
                     if((Memory.rooms[MyRoom].Eticks - Game.time) > 495){
                         energyCenter(Ecenter);
+                        SourceStorage();
                     }else{
                         SetupDefense();
                     }
@@ -126,6 +120,21 @@ module.exports.loop = function () {
                 }
         }
 
+        function SourceStorage(){ //jep, this works :) automated container building @ sources
+          for(id in sources){ // Look for link near sources
+              var creepTemp = sources[id].pos.findInRange(FIND_MY_CREEPS,2);
+              var containerTemp = sources[id].pos.findInRange(STRUCTURE_CONTAINER,2);
+              var creepTemp = sources[id].pos.findClosestByRange(creepTemp);//always returns 1 creep this way
+              console.log(containerTemp.length);
+              if(containerTemp.length < 1){
+                console.log(creepTemp.pos);
+                Game.rooms[MyRoom].createConstructionSite(creepTemp.pos,STRUCTURE_CONTAINER);
+              }
+
+          }
+        }
+
+        //SourceStorage();
         function energyCenter(FlagPos){ //change loop order
             //console.log(FlagPos.pos.x);
             var BuildPosX = FlagPos.pos.x;
@@ -214,8 +223,7 @@ module.exports.loop = function () {
         if(towers.length > 0){
             var damagedStructures = roads.concat(walls,ramparts,containers);
             var structHp = Math.pow((10-Game.rooms[MyRoom].controller.level),(10-Game.rooms[MyRoom].controller.level)/2)
-            //if(!damagedStructures){
-           // console.log(damagedStructures);
+
             var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < structure.hitsMax/structHp); });
 
             var c = 0;
@@ -274,7 +282,7 @@ module.exports.loop = function () {
     Memory.CpuStats.TickCounter += 1;
     if(Memory.roomdb == undefined){
       Memory.roomdb = [];
-      MonMan.ConsiderTerritory('W18S4');
+      MonMan.ConsiderTerritory('W18S4');//change to MyRoom for online implementation
     }
     var shortage = MainLoop-Game.cpu.limit;
     if(shortage > 0){
