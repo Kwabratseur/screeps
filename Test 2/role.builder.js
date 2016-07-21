@@ -5,7 +5,7 @@ var roleBuilder = {
     run: function(creep,AvailableEnergy,No) {
         var Moveto = require('move.to');
         var Jobs = require('creep.jobs')
-        var BufferThreshold = 10000;
+        var BufferThreshold = 0000;
 
         if(creep.memory.building == undefined){
           creep.memory.building = true;
@@ -35,8 +35,11 @@ var roleBuilder = {
 	                Moveto.move(creep,Game.flags.Dismantle.pos);
 	            }
 	        }else{
+
 	            if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
                 Jobs[creep.memory.jobs[4]](creep);
+	            }else{
+	                Moveto.move(creep,Game.flags[creep.memory.destRoom+'EnergyCenter'])
 	            }
 	        }
         }

@@ -10,7 +10,7 @@ var Moveto = {
 
     move:function(creep,target){
 
-      if(Game.cpu.tickLimit - Game.cpu.getUsed() > (Game.cpu.limit*2)) {
+      if((Game.cpu.tickLimit - Game.cpu.getUsed()) > (Game.cpu.tickLimit - 30)) {
               creep.moveTo(target);//, {reusePath: 60}
       }else{
         creep.moveTo(target, {noPathFinding: true});

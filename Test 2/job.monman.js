@@ -58,6 +58,7 @@ MonMan.monitor = function(MyRoom){
     var ArmyPresent = PresentCreeps[4];
     var controller = Game.rooms[MyRoom].controller;
     var EnergySpawn = Game.rooms[MyRoom].energyAvailable;
+    var Spawns = Mem.run(Memory.rooms[MyRoom].RoomInfo.Spawns);
     var Buffer = Game.rooms[MyRoom].storage;
     var sources = Mem.run(Memory.rooms[MyRoom].RoomInfo.Sources);
     var hostiles = 0// Game.rooms[MyRoom].find(FIND_HOSTILE_CREEPS);
@@ -81,8 +82,12 @@ MonMan.monitor = function(MyRoom){
     var FarmableEnergy = 0;
     var CarryParts = 0;
     var TravelLoss = 0;
-
-    if(Game.rooms[MyRoom].controller.level < 4){
+    if(Game.rooms[MyRoom].controller.level < 3){
+      workers = 5;
+      if(hostiles){
+        army = 2;
+      }
+    }else if(Game.rooms[MyRoom].controller.level < 4){
         workers = 2; //2 workers if low CL
         army = 0; // no stationary army if low CL
         if(hostiles){
@@ -99,12 +104,12 @@ MonMan.monitor = function(MyRoom){
     }
     for(var i in sources){ //again, roulate jobs per creep(energymon/gatherer)
       FarmableEnergy += sources[i].energyCapacity;
-      TravelLoss += (sources[i].pos.getRangeTo(controller)+1)*2;
+      TravelLoss += (sources[i].pos.getRangeTo(Spawns[0])+1)*2;
       farmers +=1;//farmers are determined by amount of sources
     }
-    var travelconst = 20;
-    if(TravelLoss > 150){
-      travelconst = 50;
+    var travelconst = 40;
+    if(TravelLoss > 200){
+      travelconst = 70;
     }
     transporters = Math.round(TravelLoss/travelconst);
 
@@ -183,10 +188,14 @@ MonMan.SpawnCreep = function(){
     var body = CreepBuilder.Rebuild(CreeptoSpawn[1],0);
     //console.log(body);
 
-    var newName = Mem.run(Memory.rooms[MyRoom[j]].RoomInfo.Spawns)[0].createCreep(body, undefined, {role: CreeptoSpawn[2],destRoom: CreeptoSpawn[3],roomTo: CreeptoSpawn[4],roomFrom: CreeptoSpawn[5],flag: CreeptoSpawn[6],jobs: CreeptoSpawn[7]});
-
+    var newName = -11;
+    if(MyRoom.length > 0){
+        newName = Mem.run(Memory.rooms[MyRoom[j]].RoomInfo.Spawns)[0].createCreep(body, undefined, {role: CreeptoSpawn[2],destRoom: CreeptoSpawn[3],roomTo: CreeptoSpawn[4],roomFrom: CreeptoSpawn[5],flag: CreeptoSpawn[6],jobs: CreeptoSpawn[7]});
+    }
+    if(newName > 0){
+      console.log('Spawning: '+CreeptoSpawn+' at '+MyRoom[j]);
+    }
     if(newName == -6){
-      console.log('Tried to spawn: '+CreeptoSpawn[2]+' but theres not enough energy:'+availableEnergies[j]+'. One bodypart will be removed.');
       Memory.failedSpawn += 1;
       Memory.WithdrawLight = false; // if this is set to false, no energy may be picked up at any extension or spawn.
       if(Memory.failedSpawn > 2 && CreeptoSpawn[1].length > 3 && CreepBuilder.Cost(body) > 300){
@@ -199,7 +208,7 @@ MonMan.SpawnCreep = function(){
     }else if(newName < 0){
       if(CreeptoSpawn != undefined){
         Memory.SpawnQueue.unshift(CreeptoSpawn);
-        console.log('Spawn is busy '+CreeptoSpawn[2]+' but theres not enough energy:'+availableEnergies[j]+'. One bodypart will be removed.');
+        console.log('Tried to spawn: '+CreeptoSpawn[2]+' but theres not enough energy:'+availableEnergies[j]+'. One bodypart will be removed.');
       }
     }
   }
@@ -380,10 +389,8 @@ MonMan.TerritoryMonitor = function(){
   //####Initialization of information about owned rooms, is used to determine target rooms for resources
 
   for(var i in Memory.rooms){
-
     Ownedrooms.push(Game.rooms[i].name);
     var OwnedRooms = Game.rooms[i].name;
-    console.log(OwnedRooms);
     if(Game.rooms[OwnedRooms].controller.owner.username == 'Kwabratseur'){
       var storages = Mem.run(Memory.rooms[OwnedRooms].RoomInfo.Storages);
       filldegrees.push(Game.rooms[OwnedRooms].energyAvailable/Game.rooms[OwnedRooms].energyCapacityAvailable);

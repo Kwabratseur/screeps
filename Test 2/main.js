@@ -112,6 +112,16 @@ module.exports.loop = function () {
         var structs = Game.rooms[MyRoom].find(FIND_STRUCTURES);
         var drops = Game.rooms[MyRoom].find(FIND_DROPPED_RESOURCES);
 
+        function removeSites(){
+          for(i in Sites){
+            Sites[i].remove();
+          }
+        }
+
+        //removeSites(); //in case something goes wrong..
+        //energyCenter(Game.flags[EcenterName]);
+        //SourceStorage();
+
         var SetupDefense = (function() {
         var executed = false;
         return function () {
@@ -123,7 +133,7 @@ module.exports.loop = function () {
         };
         })();
 
-
+        //SetupDefense();
         if(Game.rooms[MyRoom].memory.Level == undefined || Game.rooms[MyRoom].controller.level != Game.rooms[MyRoom].memory.Level){
             Memory.rooms[MyRoom].Level = Game.rooms[MyRoom].controller.level;
             Game.notify('Room: '+MyRoom+' Just leveled up to'+Game.rooms[MyRoom].controller.level);
@@ -254,10 +264,11 @@ module.exports.loop = function () {
         MonMan.monitor(MyRoom);
 
         if(towers.length > 0){
-            var damagedStructures = roads.concat(walls,ramparts,containers);
+            var damagedStructures = walls.concat(ramparts,containers);
             var structHp = Math.pow((10-Game.rooms[MyRoom].controller.level),(10-Game.rooms[MyRoom].controller.level)/2)
 
             var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < structure.hitsMax/structHp); });
+            var damagedStructures = damagedStructures.concat(roads,towers,Game.spawns[SpawnName])
 
             var c = 0;
             for (i = 0; i < damagedStructures.length; i++){

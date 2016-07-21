@@ -72,14 +72,24 @@ jobs.Repair = function(creep){
   var ramparts = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Ramparts);
   var roads = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Roads);
   var containers = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Containers);
-  var damagedStructures = roads.concat(walls,ramparts,containers);
+  var towers = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Towers);
+  var Spawns = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Spawns);
+  var damagedStructures = walls.concat(ramparts,containers);
   var structHp = Math.pow((10-creep.room.controller.level),(10-creep.room.controller.level)/2)
   var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < structure.hitsMax/structHp); });
+  var damagedStructures = damagedStructures.concat(roads,towers,Spawns)
   var numberDamaged = damagedStructures.length;
   var ClosestDamagedStructure = creep.pos.findClosestByRange(damagedStructures);
+
+  var c = 0;
+            for (i = 0; i < damagedStructures.length; i++){
+                if(damagedStructures[i].hits < damagedStructures[c].hits){
+                    c = i;
+                }
+            }
   if(numberDamaged > 10){
-      if(creep.repair(ClosestDamagedStructure) == ERR_NOT_IN_RANGE) {
-          Moveto.move(creep,ClosestDamagedStructure);
+      if(creep.repair(damagedStructures[c]) == ERR_NOT_IN_RANGE) {
+          Moveto.move(creep,damagedStructures[c]);
 
       }
       return true;
@@ -124,7 +134,10 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
 
   var extensions = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Extensions);
   var spawns = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Spawns);
-  var Sources = extensions.concat(spawns,extensions)
+
+  var Sources = extensions.concat(spawns,extensions);
+  Sources = _.filter(Sources, function(structure){return (structure.energy != 0); });
+  var Source = creep.pos.findClosestByRange(Sources);
     if(storages != undefined){
           jobs.EmptyLink(creep);
           if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
@@ -132,8 +145,8 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
                }
 
     }else if((creep.room.energyAvailable > creep.room.energyCapacityAvailable/2) && Memory.WithdrawLight == true){
-        if(Sources[0].transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                Moveto.move(creep,Sources[0]);
+        if(Source.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                Moveto.move(creep,Source);
             }
 
     }
@@ -142,17 +155,19 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
 jobs.EmptyLink = function(creep){
   var Links = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Links);
   var linkSend = creep.pos.findInRange(Links, 6)[0];
-  var Target = linksend.pos.findInRange(FIND_MY_STRUCTURES, 2)[0]
-  if(link != undefined && link.energy > 0){
-      if(creep.carry.energy == 0){ // if creep is empty
-          if(link.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-              Moveto.move(creep,link);
+    if(Links.length > 1){
+      var Target = linksend.pos.findInRange(FIND_MY_STRUCTURES, 2)[0]
+      if(link != undefined && link.energy > 0){
+          if(creep.carry.energy == 0){ // if creep is empty
+              if(link.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                  Moveto.move(creep,link);
+              }
+          }else{
+            if(creep.transfer(Target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                Moveto.move(creep,Target);
+            }
           }
-      }else{
-        if(creep.transfer(Target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-            Moveto.move(creep,Target);
         }
-      }
     }
 }
 
