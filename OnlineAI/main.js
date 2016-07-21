@@ -240,10 +240,10 @@ module.exports.loop = function () {
             if(buil >= Nbuil && work >= Nwork && harv >= Nharv && AvailableEnergy > (Game.rooms[MyRoom].energyCapacityAvailable-300)) {
                Nkill = 1;
                if(Game.flags.Flag2 != undefined){
-                   Nkill += 4;
+                   //Nkill += 1;
                }
             if(Hostiles){
-                        Nkill += 3;
+                        //Nkill += 1;
                         }
             }      
             return [Nbuil,Nupgr,Nwork,Nharv,Nkill,NEMon];
@@ -295,22 +295,32 @@ module.exports.loop = function () {
         }
         
         if(worker.length < Nos[2]) {
-            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,4,"Work"); 
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,AvailableEnergy,4,"Work"); 
             console.log(Layout);
             var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'worker',Home: MyRoom});
             console.log('Spawning new worker: ' + newName+ ' in room '+MyRoom);
         } 
         
         if(energymon.length < Nos[5]) {
-            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/4,AvailableEnergy,10,"Transport");
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,AvailableEnergy,10,"Transport");
             var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'energymon',Home: MyRoom});
             console.log('Spawning new EnergyManager: ' + newName+ ' in room '+MyRoom);
         }
         
         if(defender.length < Nos[4] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
-            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/3,AvailableEnergy,20,"Army"); 
+            if(_.sum(storages[0].store) > 2000){
+                var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,AvailableEnergy,40,"Army"); 
+                var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'defender',Home: MyRoom});
+            }else{
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,AvailableEnergy/3,40,"Army"); 
             var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'defender',Home: MyRoom});
+            }
             console.log('Spawning new defender: ' + newName+ ' in room '+MyRoom);
+        }
+        if(healers.length < 1 && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,20,"Heal");
+            var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'healer',Home: MyRoom}); // <---- look for spawn in for loop and insert here with Game.spawns[SpawnName]
+            console.log('Spawning new healer: ' + newName+ ' in room '+MyRoom);
         }
         if(Game.rooms[MyRoom].energyCapacityAvailable < 800){
             
@@ -321,14 +331,14 @@ module.exports.loop = function () {
             }
         }else{
             if(builder.length < Nos[0] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
-                var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,30,"Build"); 
+                var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy/4,30,"Build"); 
                 var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'builder',Home: MyRoom});
                 console.log('Spawning new builder: ' + newName+ ' in room '+MyRoom);
             }
         }
     
         if(upgrader.length < Nos[1] && harvester.length >=Nos[3] && worker.length >= Nos[2] ) {
-            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,30,"Build");
+            var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy/3,30,"Build");
             var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'upgrader',Home: MyRoom});
             console.log('Spawning new upgrader: ' + newName+ ' in room '+MyRoom);
         }
@@ -362,7 +372,7 @@ module.exports.loop = function () {
                 }
                 if(Creephit){
                     if(healers == undefined || healers.length < 3){
-                        var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/4,AvailableEnergy,20,"Heal");
+                        var Layout = CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,AvailableEnergy,20,"Heal");
                         var newName = Game.spawns[SpawnName].createCreep(Layout, undefined, {role: 'healer',Home: MyRoom}); // <---- look for spawn in for loop and insert here with Game.spawns[SpawnName]
                         console.log('Spawning new Healer, under attack!: ' + newName+ ' in room '+MyRoom);
                     }

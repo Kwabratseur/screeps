@@ -24,17 +24,31 @@ module.exports.loop = function () {
 
     if((Memory.tenCounter == undefined )|| (Memory.tenCounter < Game.time)){ //10 ticks counter
         Memory.tenCounter = Game.time + 10;
-        //MonMan.TerritoryMonitor();
+        MonMan.TerritoryMonitor();
         MonMan.SpawnCreep();
     }
     if((Memory.fiftyCounter == undefined) || (Memory.fiftyCounter < Game.time)){ //50 ticks counter
         Memory.fiftyCounter = Game.time + 50;
+        if((Memory.failedSpawn == undefined) || (Memory.failedSpawn > 0)){
+          Memory.failedSpawn = 0;
+        }
     }
     if((Memory.hourCounter == undefined) || (Memory.hourCounter < Game.time)){ //hour counter
         Memory.hourCounter = Game.time + (3600/2.5);
     }
 
-    //MonMan.TerritoryManager();
+    for(var i in Memory.roomdb){// seek correct location in relation to DB initialization
+      var rooms = Memory.roomdb[i];
+      var Sites = 0;
+      if(Game.rooms[rooms[0]] != undefined){
+        var Sites = Game.rooms[rooms[0]].find(FIND_CONSTRUCTION_SITES);
+      }
+      var CreepState = MonMan.TerritoryManager(rooms,0,0,Sites); //uncomment
+      rooms[8] = CreepState[0]; //amount of creeps currently present
+      rooms[7] = CreepState[1]; //amount of killed creeps within x ticks
+
+      Memory.roomdb[i] = rooms; //set to memory.
+    }
     for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
 		    var SpawnName = name;
         var MyRoom = Game.spawns[SpawnName].room.name;    //Then offcourse make everything depend from variable MyRoom(mostly the case)
@@ -48,8 +62,27 @@ module.exports.loop = function () {
         }//will only execute for first loop
 
         var EcenterName = MyRoom+'EnergyCenter';
+        // make function which places this flag on a good pos.
+        // Just make a Flag-manager which places additional flags.
+        // Current implemented flags:
+        //'RoomName'@ 25,25 (used for creep navigation);
+        //'RoomName'EnergyCenter @ free grid of around 9*10 (L*B) orientated left, down relative from the flag.
+        // Siege'RoomName' @ room you want to attack (WIP)(Could be regulated with flagManager for holidays)
+        // include downgrading controllers in this section
+        // Reserve'RoomName' @ room you want to reserve (farm)(WIP, will be regulated with flagManager)
+        // Claim'RoomName' @ room you want to claim (probably a farm before)(WIP, will be regulated with flagManager)
 
-        if(!Game.flags.MyRoom){
+        /*
+        Add some bucket modes.
+        Depending what the circumstances are, the code execution should be prioritized differently.
+        When there is a need to defend territory, a more aggressive mode can be activated which prioritizes the
+        creation of defenders + their movement and the energy maintenance of all structures. The code can be allowed
+        to drain additional CPU from the bucket in this case.
+        When everything is fine, the bucket should be recharged to around 80% for the case another attack comes.
+        When attacking, the same can be done for the army's movement and attack moves to be sure it's effective.
+
+        */
+        if(!Game.flags.MyRoom){ //'RoomName flag'
           Game.rooms[MyRoom].createFlag(25, 25, MyRoom);
         } //place flag for each room
 
@@ -282,7 +315,7 @@ module.exports.loop = function () {
     Memory.CpuStats.TickCounter += 1;
     if(Memory.roomdb == undefined){
       Memory.roomdb = [];
-      MonMan.ConsiderTerritory('W18S4');//change to MyRoom for online implementation
+      MonMan.ConsiderTerritory(MyRoom);//change to MyRoom for online implementation
     }
     var shortage = MainLoop-Game.cpu.limit;
     if(shortage > 0){

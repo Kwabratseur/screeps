@@ -14,7 +14,7 @@ var roleHealer = {
             }
         }else{
             if(Game.flags.Flag2 != undefined){
-                if(creep.pos.inRangeTo(Game.flags.Flag2,10)){
+                if(creep.pos.inRangeTo(Game.flags.Flag2,13)){
                 
                 }else{
                     Moveto.move(creep,Game.flags.Flag2.pos);

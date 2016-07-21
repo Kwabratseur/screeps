@@ -3,6 +3,9 @@ var roleArmy = {
     /** @param {Creep} creep **/
     run: function(creep) {
         var Moveto = require('move.to');
+        if(creep.getActiveBodyparts(ATTACK) == 0){
+            creep.moveTo(Game.rooms['W17S32'].controller);
+        }else{
         if(creep.memory.HarvestTile != creep.room.name){
 	            Moveto.move(creep,Game.flags[creep.memory.FlagName]);
 	    }else{
@@ -22,6 +25,7 @@ var roleArmy = {
 	            Moveto.move(creep,Game.flags[creep.memory.FlagName].pos);
 	        }
 	    }
+    }
     }
 };
 

@@ -13,7 +13,7 @@ var Moveto = {
     
         // Perform pathfinding only if we have enough CPU
         if(Game.cpu.tickLimit - Game.cpu.getUsed() > 50) {
-                creep.moveTo(target, {reusePath: 60});
+                creep.moveTo(target);
         }
     }
 }

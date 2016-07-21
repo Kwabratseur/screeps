@@ -40,7 +40,7 @@ var farmTile = {
         
         if(SpawnName.room.energyAvailable > SpawnName.room.energyCapacityAvailable*0.8){
             if(army.length < 2 && clearRoom == true){
-                var Layout = CreepBuilder.Layout(EnergyCap/4,AvailableEnergy,20,"Army"); 
+                var Layout = CreepBuilder.Layout(EnergyCap/2,AvailableEnergy,40,"Army"); 
                 var newName = SpawnName.createCreep(Layout, undefined, {role: 'army', HarvestTile: TargetRoom.pos.roomName, FlagName: TargetRoom.name});
                 console.log('Spawning new warrior: ' + newName+' for: '+TargetRoom);
             }

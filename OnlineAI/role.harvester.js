@@ -32,7 +32,7 @@ var roleHarvester = {
 	                k = i;
 	            }
 	        }
-	        if(_.sum(containers[k].store) != 0){
+	        if((drops[c].amount < 500) || (_.sum(containers[k].store) != 0)){
 	            if(containers[No] != undefined && _.sum(containers[No].store) < 200){
 	                No = k;
 	            }

@@ -91,12 +91,8 @@ jobs.Repair = function(creep){
 jobs.Upgrade = function(creep){
   if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
       Moveto.move(creep,creep.room.controller);
-      return true;
   }
-  else{
-    return false;
-  }
-
+  return true;
 }
 
 jobs.Attack = function(creep){
