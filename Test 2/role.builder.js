@@ -36,10 +36,10 @@ var roleBuilder = {
 	            }
 	        }else{
 
-	            if(AvailableEnergy > creep.room.energyCapacityAvailable*0.5 && (creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold)) {
+	            if(creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold) {
                 Jobs[creep.memory.jobs[4]](creep);
 	            }else{
-	                Moveto.move(creep,Game.flags[creep.memory.destRoom+'EnergyCenter'])
+	                Moveto.move(creep,Game.flags[creep.memory.destRoom])
 	            }
 	        }
         }

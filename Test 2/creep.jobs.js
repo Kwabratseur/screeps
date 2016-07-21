@@ -144,7 +144,7 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
                     Moveto.move(creep,storages);
                }
 
-    }else if((creep.room.energyAvailable > creep.room.energyCapacityAvailable/2) && Memory.WithdrawLight == true){
+    }else if(Memory.WithdrawLight == true && (creep.room.energyAvailable > creep.room.energyCapacityAvailable*0.3)){
         if(Source.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
                 Moveto.move(creep,Source);
             }

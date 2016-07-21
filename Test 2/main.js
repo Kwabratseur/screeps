@@ -328,7 +328,7 @@ module.exports.loop = function () {
       Memory.roomdb = [];
       MonMan.ConsiderTerritory(MyRoom);//change to MyRoom for online implementation
     }
-    var shortage = MainLoop-Game.cpu.limit;
+    var shortage = MainLoop-10;
     if(shortage > 0){
         var message = 'CPU usage-limit='+shortage+'     - CPU:'+MainLoop+'  ; Bucket:'+Game.cpu.bucket+'; TickLimit:'+Game.cpu.tickLimit+' ;happened at tick: '+Game.time;
         console.log(message);

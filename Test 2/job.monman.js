@@ -83,7 +83,8 @@ MonMan.monitor = function(MyRoom){
     var CarryParts = 0;
     var TravelLoss = 0;
     if(Game.rooms[MyRoom].controller.level < 3){
-      workers = 5;
+      workers = 4;
+      transporters = 2;
       if(hostiles){
         army = 2;
       }
@@ -107,11 +108,11 @@ MonMan.monitor = function(MyRoom){
       TravelLoss += (sources[i].pos.getRangeTo(Spawns[0])+1)*2;
       farmers +=1;//farmers are determined by amount of sources
     }
-    var travelconst = 40;
+    var travelconst = 30;
     if(TravelLoss > 200){
       travelconst = 70;
     }
-    transporters = Math.round(TravelLoss/travelconst);
+    transporters += Math.round(TravelLoss/travelconst);
 
     if(Mem.run(Memory.rooms[MyRoom].RoomInfo.Links)[0]){
       transporters -= 1;
@@ -198,7 +199,7 @@ MonMan.SpawnCreep = function(){
     if(newName == -6){
       Memory.failedSpawn += 1;
       Memory.WithdrawLight = false; // if this is set to false, no energy may be picked up at any extension or spawn.
-      if(Memory.failedSpawn > 2 && CreeptoSpawn[1].length > 3 && CreepBuilder.Cost(body) > 300){
+      if(Memory.failedSpawn > 4 && CreeptoSpawn[1].length > 3 && CreepBuilder.Cost(body) > 300){
         CreeptoSpawn[1].shift();
       }
     }else{
@@ -294,12 +295,14 @@ MonMan.manager = function(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources)
 
         if(creep.memory.role == 'farmer') {
                 if(!creep.memory.sourceID){
+                    var c = 0;
                   for(var i in sources){
-                    if(sources[i].pos.findInRange(FIND_MY_CREEPS,2).length < 1){
-                      creep.memory.sourceID = sources[i].id;
+                    if(sources[i].pos.findInRange(FIND_MY_CREEPS,2).length < sources[c].pos.findInRange(FIND_MY_CREEPS,2).length){
+                      c = i;
+                      
                     }
                   }
-
+                creep.memory.sourceID = sources[c].id;
                 }
             if(AmountWorkMain < sources.length){
                 AmountWorkMain+=1;
@@ -669,7 +672,12 @@ MonMan.ConsiderTerritory = function(roomtest){
   //
     if(Game.rooms[Territory[i]] != undefined){
         console.log(Territory[i]);
-        Memory.roomdb.unshift([Territory[i],true,0,0,0,0,0,0,0]); //0 == green, 1 == NPC's, orange 2== player, red. true means it is a farmed tile.
+        
+        if(Game.rooms[Territory[i]].controller.owner.username == 'Kwabratseur'){
+            
+        }else{
+            Memory.roomdb.unshift([Territory[i],true,0,0,0,0,0,0,0]); //0 == green, 1 == NPC's, orange 2== player, red. true means it is a farmed tile.
+        }
     }else{
       Memory.roomdb.unshift([Territory[i],false,0,0,0,0,0,0,0]);// 0 == scout if false, 1 == hostile, attack and farm
     }
