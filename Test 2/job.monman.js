@@ -5,7 +5,7 @@ var roleTransporter = require('role.transporter');
 var roleBuilder = require('role.builder');
 var roleFarmer = require('role.farmer');
 var roleArmy = require('role.army');
-
+var roleWarBand = require('role.warmy');
 
 //4 types of creeps in 1 role and 2 jobs!
 var jobGatherer = ['GatherEnergy','FillStructures']; //dest == to -> Gatherer, dest != to -> trucker
@@ -17,6 +17,7 @@ var jobWorker = ['Build','Upgrade','Repair','Attack','GetEnergy'];
 var jobExtWorker = ['Build','Repair','Upgrade','Attack','GatherEnergy']; // set dest , To, From to a non-owned room with this job array to give it the old ExternalBuilder behaviour
 var jobUpgrader = ['Upgrade','Build','Repair','Attack','GetEnergy'];
 var jobFixer = ['Repair','Build','Upgrade','Attack','GetEnergy'];
+var jobIdle = [''];
 //worker jobs
 var jobArmy = ['Attack'];
 //army jobs
@@ -102,7 +103,7 @@ MonMan.monitor = function(MyRoom){
         }
     }else{
         workers = 3; //roulate priorities of buildjobs per creep
-        army = Math.round(Game.rooms[MyRoom].controller.level/2); //stationary army
+        //army = Math.round(Game.rooms[MyRoom].controller.level/2); //stationary army uncomment later!
     }
     if(Buffer != undefined && Buffer.length > 0){
         if(_.sum(Buffer[0].store) > 60000 && Game.rooms[MyRoom].controller.level > 3){
@@ -200,6 +201,8 @@ MonMan.SpawnCreep = function(){
           j = i;
       }
   }
+  Memory.HighestEnergy = availableEnergies[j];
+  Memory.BestFilled = FillDegree[c]; // Available/Capacity = filldegree -> Available/Filldegree = Capacity
   if(CreeptoSpawn != undefined){
     var body = CreepBuilder.Rebuild(CreeptoSpawn[1],0);
     //console.log(body);
@@ -263,7 +266,7 @@ MonMan.manager = function(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources)
     for(i = 0; i < drops.length; i++){
       dropsamount += drops[i].energy
   }
-  if(dropsamount > 1000){
+  if(dropsamount > 1000 || AvailableEnergy == Game.rooms[MyRoom].energyCapacityAvailable){
     Memory.rooms[MyRoom].creepInfo.Transporters[1] = 1;
   }else{
     Memory.rooms[MyRoom].creepInfo.Transporters[1] = 0.5;
@@ -295,7 +298,7 @@ MonMan.manager = function(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources)
  //manager will setup creep jobs and see if there is a possible better distribution
   for(var name in Game.creeps) {
       var creep = Game.creeps[name];
-      if(creep.memory.destRoom == MyRoom){ //controls creeps with this room as destination
+      if(creep.memory.destRoom == MyRoom && creep.memory.Warband == undefined){ //controls creeps with this room as destination
         if(creep.memory.jobs && (creep.memory.roomFrom == MyRoom) && (creep.memory.roomTo == MyRoom)){ //redistributes creeps active in this room
           if((jobGatherer[0] == creep.memory.jobs[0]) && (jobGatherer[jobGatherer.length] == creep.memory.jobs[creep.memory.jobs.length])){
             gatherer +=1;
@@ -351,7 +354,9 @@ MonMan.manager = function(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources)
           }
       }
   }
-  if(((Dgatherer >= gatherer && Ddistributor >= distributor) || Dworker != worker || Dfixer != fixer)&& Memory.tenCounter == Game.time){
+  console.log('Desired Gatherers:'+Dgatherer+', Distributors:'+Ddistributor+', Workers:'+Dworker+', Upgraders:'+Dupgrader+', Fixers:'+Dfixer);
+  console.log('Total Gatherers:'+gatherer+', Distributors:'+distributor+', Workers:'+worker+', Upgraders:'+upgrader+', Fixers:'+fixer);
+  if((Dgatherer != gatherer || Ddistributor != distributor || Dworker != worker || Dfixer != fixer)&& Memory.tenCounter == Game.time){
     MonMan.Redistribute(MyRoom,Dgatherer,Ddistributor,Dworker,Dupgrader,Dfixer);
     console.log('Desired Gatherers:'+Dgatherer+', Distributors:'+Ddistributor+', Workers:'+Dworker+', Upgraders:'+Dupgrader+', Fixers:'+Dfixer);
     console.log('Total Gatherers:'+gatherer+', Distributors:'+distributor+', Workers:'+worker+', Upgraders:'+upgrader+', Fixers:'+fixer);
@@ -557,11 +562,12 @@ MonMan.TerritoryMonitor = function(Expand){
 
     //###################### Setting up Territory Warstates
     if(rooms[2] != 0){ //set up some progressive tactics here.
-    //if room is not safe
       if(rooms[2] == 1){
+        MonMan.Warband('Light',rooms[0],'Offensive');
       //if enemy creeps are present upon entry and controller level == 0 Or enemy creeps have entered a farmed room
         if(rooms[7] > 5 || rooms[2] == 3){ //state 3 means the room will be sieged, think of a flagname like 'Roomname'+EnergyCenter to achieve this. regulate and check this above.
           //more aggresive defend/attack code
+          MonMan.Warband('Medium',rooms[0],'Offensive');
 
         }
 
@@ -573,9 +579,176 @@ MonMan.TerritoryMonitor = function(Expand){
 }
 }
 
+MonMan.MaintainWarbands = function(WarBand,n,Amount,Role){
+  var WorkingCreeps = 0;
+  var CreepDemand = 0;
+  for(var room in Memory.rooms){
+    CreepDemand += (Memory.rooms[room].creepInfo.Farmers[0]+Memory.rooms[room].creepInfo.Transporters[0]+Memory.rooms[room].creepInfo.Workers[0]+Memory.rooms[room].creepInfo.Army[0]);
+    if(Memory.creeps.length > 0){
+    for(var name in Memory.creeps){
+      creep = Game.creeps[name];
+      if(Memory.Warband[creep.memory.Warband] == undefined){
+        Mem.CreepToWar(creep,n);
+      }
+      if(creep.memory.destRoom == room){
+        WorkingCreeps +=1;
+      }
+    }
+  }
+  }
+  var InQueue = MonMan.InQueue(Game.flags[Memory.Warband[i].Flag2].roomName,Role);
 
-MonMan.Warband = function(type){
+  var tough = MonMan.InQueue(WarBand.Flag2,'tough');
+  var heal = MonMan.InQueue(WarBand.Flag2,'healer');
+  var range = MonMan.InQueue(WarBand.Flag2,'ranger');
+  var soldier = MonMan.InQueue(WarBand.Flag2,'army');
+  var work = MonMan.InQueue(WarBand.Flag2,'demolisher');
+  var claim = MonMan.InQueue(WarBand.Flag2,'claimer');
 
+  if(InQueue != undefined){
+    Amount -= InQueue;
+  }
+
+  if(Amount > 0){
+    for(var name in Memory.creeps){
+      creep = Memory.creeps[name];
+      if(creep.Warband == n){
+        if(creep.role == Role){
+          Amount -= 1;
+        }
+      }
+    }
+  }
+  if(Amount >= 0){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+MonMan.MonitorWarbands = function(){ //once each 10 ticks
+  for(var i in Memory.Warband){
+    //Mem.WarStats(n,towers,mode,SpawningDef,NoArmy,AvgSize,NoCreeps,kills,death) calculate warstats every 10 ticks
+    if(Memory.Warband[i].Names.length < (Memory.Warband[i].S + Memory.Warband[i].R + Memory.Warband[i].H + Memory.Warband[i].T + Memory.Warband[i].W + Memory.Warband[i].C)){
+      room = Game.flags[Memory.Warband[i].Flag2].roomName;
+      Wb = Memory.Warband[i]
+
+      if(MonMan.MaintainWarbands(Wb,i,Wb.T,'tough')){ //Tough units //roles: tough,healer,ranger,soldier,demolisher,claimer
+      }else if(MonMan.InQueue(room, 'tough') < 1){
+        Mem.AddtoQueue(0.5,CreepBuilder.Layout((Memory.HighestEnergy/Memory.BestFilled),Game.rooms[MyRoom].Memory.HighestEnergy,40,"Tough"),'tough',room,room,room,Wb.Flag2,jobIdle);
+      }
+
+      if(MonMan.MaintainWarbands(Wb,i,Wb.H,'healer')){ //Heal units
+      }else if(MonMan.InQueue(room, 'healer') < 1){
+        Mem.AddtoQueue(0.5,CreepBuilder.Layout((Memory.HighestEnergy/Memory.BestFilled),Game.rooms[MyRoom].Memory.HighestEnergy,40,"Heal"),'healer',room,room,room,Wb.Flag2,jobIdle);
+      }
+
+      if(MonMan.MaintainWarbands(Wb,i,Wb.R,'ranger')){ //Ranged units
+      }else if(MonMan.InQueue(room, 'ranger') < 1){
+        Mem.AddtoQueue(0.5,CreepBuilder.Layout((Memory.HighestEnergy/Memory.BestFilled),Game.rooms[MyRoom].Memory.HighestEnergy/2,40,"Ranged_Army"),'ranger',room,room,room,Wb.Flag2,jobIdle);
+      }
+
+      if(MonMan.MaintainWarbands(Wb,i,Wb.S,'soldier')){ //Ranged units
+      }else if(MonMan.InQueue(room, 'soldier') < 1){
+        Mem.AddtoQueue(0.5,CreepBuilder.Layout((Memory.HighestEnergy/Memory.BestFilled),Game.rooms[MyRoom].Memory.HighestEnergy/2,40,"Army"),'soldier',room,room,room,Wb.Flag2,jobIdle);
+      }
+
+      if(MonMan.MaintainWarbands(Wb,i,Wb.W,'demolisher')){ //Ranged units
+      }else if(MonMan.InQueue(room, 'demolisher') < 1){
+        Mem.AddtoQueue(0.5,CreepBuilder.Layout((Memory.HighestEnergy/Memory.BestFilled),Game.rooms[MyRoom].Memory.HighestEnergy/2,40,"Work"),'demolisher',room,room,room,Wb.Flag2,jobIdle);
+      }
+
+      if(MonMan.MaintainWarbands(Wb,i,Wb.C,'claimer')){ //Ranged units
+      }else if(MonMan.InQueue(room, 'claimer') < 1){
+        Mem.AddtoQueue(0.5,CreepBuilder.Layout((Memory.HighestEnergy/Memory.BestFilled),Game.rooms[MyRoom].Memory.HighestEnergy/2,40,"Claim"),'claimer',room,room,room,Wb.Flag2,jobIdle);
+      }
+    //if the warband hasn't reached it's size, add/spawn creeps
+      console.log(Memory.Warband[i]);
+
+    }
+  }
+}
+
+MonMan.ManageWarbands = function(){
+  //Adjust tactics/strategy based on warstats! but not here, do this in the warband role.
+  for(var i in Memory.Warband) {
+    for(var name in Memory.Warband[i].Names){
+      if(!Game.creeps[name]) {
+          delete Memory.creeps[name];
+          delete Memory.Warband[i].Names[name];
+      }
+      var creep = Game.creeps[name];
+      roleWarBand.run(creep)//
+    }
+  }
+}
+
+MonMan.Warband = function(type, flag, mode){//type: Light,Medium,Heavy. mode:Offensive,Defensive.
+  //defensive -> kill, steal energy, repair, heal
+  //offensive -> drain, heal, siege, kill
+
+  //also make decisions based on warstats, add this to individual jobs for tactics
+  //defensive warstats, offensive warstats!
+
+  //Mem.CreepToWar(creep,n)
+  var t = 0;
+  var h = 0;
+  var r = 0;
+  var s = 0;
+  var w = 0;
+  var c = 0;
+
+  if(type == 'Light'){
+    t = 0;
+    h = 2;
+    r = 0;
+    s = 1;
+  }else if(type == 'Medium'){
+    t = 0;
+    h = 2;
+    r = 1;
+    s = 1;
+  }else if(type == 'Heavy'){
+    t = 1;
+    h = 3;
+    r = 2;
+    s = 2;
+  }
+
+  if(mode == 'Offensive'){
+    s += 2;
+    r += 1;
+    w += 2;
+    // tougher move in- and out to drain towers
+    // healers heal tougher outside room preferably
+    // ranger kill enemies behind walls/ tower if within ranger
+    // soldier only needed if he spawns defensive creeps
+    // workers are omnoming the structures.
+
+  }if(mode == 'Defensive'){
+    s += 1;
+    r += 2;
+    w += 1;
+    //worker get resources dropped by enemy, repair wall/ramparts
+    //healer heal retreated units
+    //ranger attack healers, soldiers, rangers.
+    //soldier kill in front of ramparts and move out of way for worker , retreat if no attack parts
+  }if(mode == 'Claim'){
+    h = 0;
+    r = 0;
+    s = 2;
+    //if owned, degrade first
+    //claimer claims room
+    //soldier escorts claimer
+  }if(mode == 'Reserve'){
+    h = 0;
+    r = 0;
+    s = 2;
+    //soldier camps and keeps room safe
+    //claimer will reserve
+  }
+  Mem.initWarband(type,flag,flag,mode,[],s,r,h,t,w,c);
+  //second flag is retreat point, needs to be placed in adjacent room for offense, behind ramparts for defense.
 }
 
 
@@ -590,7 +763,7 @@ MonMan.TerritoryManager = function(MyRoom,Warbands,Type,Sites){
   var TestAmount = false;
   for(var name in Game.creeps) {
       var creep = Game.creeps[name];
-      if(creep.memory.destRoom == MyRoom[0]){ //controls creeps with this room as destination
+      if(creep.memory.destRoom == MyRoom[0] && creep.memory.Warband == undefined){ //controls creeps with this room as destination
         Ccount +=1;
         var HPconstant = 0.5;
         if(((creep.hitsMax - creep.hits) < (creep.hitsMax*HPconstant)) && (creep.ticksToLive > 10)){
@@ -717,13 +890,13 @@ MonMan.Redistribute = function(MyRoom,Gatherer,Distributor,Worker,Upgrader,Fixer
       var creep = Game.creeps[name];
       if(creep.memory.destRoom == MyRoom){
         if(creep.memory.role == 'harvester') {
-        if(Gatherer > 0){
-          creep.memory.jobs = jobGatherer;
-          Distributor -= 1;
-        }else if(Distributor > 0){
-          creep.memory.jobs = jobDistributor;
-          Gatherer -=1;
-        }
+          if(Distributor > 0){
+            creep.memory.jobs = jobDistributor;
+            Distributor -=1;
+          }else if(Gatherer > 0){
+            creep.memory.jobs = jobGatherer;
+            Gatherer -= 1;
+          }
         }
 
         if(creep.memory.role == 'worker') {

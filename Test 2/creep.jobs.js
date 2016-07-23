@@ -37,6 +37,12 @@ jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Wil
       Moveto.move(creep,containers);
   }if(creep.harvest(Game.getObjectById(creep.memory.sourceID)) == ERR_NOT_IN_RANGE) {
           Moveto.move(creep,Game.getObjectById(creep.memory.sourceID));
+          creep.memory.work += 1;
+  }
+  if(creep.memory.work > 30){
+    delete creep.memory.sourceID;
+    delete creep.memory.work;
+    creep.say('Workless',true);
   }
   else {
     var Links = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Links);
@@ -94,16 +100,21 @@ jobs.Repair = function(creep){
                 }
             }
   if(numberDamaged > 0){
-      
-      if(creep.repair(ClosestDamagedStructure) == ERR_NOT_IN_RANGE) {
-          Moveto.move(creep,ClosestDamagedStructure);
+      if(damagedStructures[c].hits < 4000){
+        if(creep.repair(damagedStructures[c])  == ERR_NOT_IN_RANGE) {
+            Moveto.move(creep,damagedStructures[c]);
+        }
+      }else{
+        if(creep.repair(ClosestDamagedStructure)  == ERR_NOT_IN_RANGE) {
+            Moveto.move(creep,ClosestDamagedStructure);
+        }
       }
       if(ClosestDamagedStructure.hits < 6000){
           creep.say(ClosestDamagedStructure.hits, true);
       }else{
           creep.say(ClosestDamagedStructure.hitsMax/structHp, true);
       }
-      
+
       //console.log(damagedStructures[c].structureType+' Will be repaired to: '+(damagedStructures[c].hitsMax/structHp)+', current HP: '+damagedStructures[c].hits);
       //console.log(creep.repair(ClosestDamagedStructure));
       return true;
@@ -145,6 +156,33 @@ jobs.Attack = function(creep){
   }
 }
 
+jobs.War = function(creep){ //All different strategie/tactics should be included here.
+  var hostiles = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+  var hostileBuildings = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES);
+  if(creep.getActiveBodyparts(ATTACK) != 0){
+    if(hostiles != undefined){
+        creep.say('I see you ',true);
+        if(creep.attack(hostiles) == ERR_NOT_IN_RANGE) {
+            Moveto.move(creep,hostiles, {reusePath: 50});
+        }
+    }
+  }else if(creep.getActiveBodyparts(WORK) != 0){
+    if(creep.dismantle(hostileBuildings) == ERR_NOT_IN_RANGE) {
+        Moveto.move(creep,hostileBuildings);
+    }
+  }else if(creep.getActiveBodyparts(HEAL) != 0){
+    if(creep.heal(target) == ERR_NOT_IN_RANGE) {
+        Moveto.move(creep,target);
+    }
+  }else if(creep.getActiveBodyparts(RANGED_ATTACK) != 0){
+      //jobranger
+  }else if(creep.getActiveBodyparts(CLAIM) != 0){
+      //jobclaimer
+  }else if(creep.getActiveBodyparts(TOUGH) != 0 && (creep.getActiveBodyparts(ATTACK) == 0 && creep.getActiveBodyparts(RANGED_ATTACK) == 0)){
+      //jobtoughguy
+  }
+}
+
 jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensions+spawns. Needs conditional to block picking up.
   var storages = creep.room.storage;
 
@@ -152,16 +190,24 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
   var spawns = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Spawns);
 
   var Sources = extensions.concat(spawns,extensions);
+  var amountFull = extensions.concat(spawns,extensions).length;
   Sources = _.filter(Sources, function(structure){return (structure.energy != 0); });
   var Source = creep.pos.findClosestByRange(Sources);
     if(storages != undefined){
-          jobs.EmptyLink(creep);
-          if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+        if(creep.memory.role == 'harvester'){
+            if(amountFull != Sources.length){
+                if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
                     Moveto.move(creep,storages);
                }
-
+            }
+            jobs.EmptyLink(creep);
+        }else{
+            if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                Moveto.move(creep,storages);
+            }
+        }
     }else if(Memory.WithdrawLight == true && (creep.room.energyAvailable > creep.room.energyCapacityAvailable*0.3)){
-        if(Source.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+        if(Source.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ extensions, spawns
                 Moveto.move(creep,Source);
             }
 

@@ -204,6 +204,49 @@ Memstructures.set = function(MyRoom,SpawnName2){ //use this function to retrieve
             };
 }
 
+Memstructures.CreepToWar = function(creep,n){
+  Memory.Warband[n].Names.unshift(creep.name);
+  creep.memory.destRoom = Memory.Warband[n].Flag;
+  creep.memory.roomFrom = Memory.Warband[n].Flag2;
+  creep.memory.Warband = n;
+}
+
+Memstructures.WarStats = function(n,towers,mode,SpawningDef,NoArmy,AvgSize,NoCreeps,kills,death){
+  Memory.Warband[n].Mode = {
+    Mode:mode,
+    Towers:towers,
+    Spawningdef:SpawningDef,
+    TotalEnemies: NoCreeps,
+    TotalArmy: NoArmy,
+    AvgArmy: AvgSize,
+    HisLos: kills,
+    MyLos: death
+  }
+
+}
+
+Memstructures.DeleteWarband = function(n){
+  delete Memory.Warband[n];
+}
+
+Memstructures.initWarband = function(type,flag,flag2,mode,names,soldier,range,heal,tough,work,claim){
+  if(Memory.Warband == undefined){
+    Memory.Warband = [];
+  }
+  Memory.Warband.unshift({
+    Type:type,
+    Flag:flag,
+    Flag2:flag2,
+    Mode:mode,
+    Names:names,
+    S:soldier,
+    R:range,
+    H:heal,
+    T:tough,
+    W:work,
+    C:claim
+  });
+}
 
 
 module.exports = Memstructures;

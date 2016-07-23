@@ -9,6 +9,11 @@ function CreepType(Creepy,n,b,c){
         else{ BodyPart = MOVE; }
     break;
 
+    case'Tough':
+        if((n % 2) == 0){ BodyPart = TOUGH;}
+        else{ BodyPart = MOVE; }
+    break;
+
     case'Build':
         if(c == 0){ BodyPart = CARRY; }
         if(c == 1 && b == 0 ){ BodyPart = MOVE; } // this one will be added twice in a row of 9
@@ -17,6 +22,10 @@ function CreepType(Creepy,n,b,c){
 
     case'Work':
         BodyPart = WORK;
+        if(n > 5){
+          if((n % 2) == 0){ BodyPart = MOVE;}
+          else{ BodyPart = WORK};
+        }
     break;
 
     case'Claim':
@@ -63,6 +72,10 @@ function CreepTypeInit(Creepy,BodySize){
         BodyParts =[MOVE,CARRY,MOVE];
     break;
 
+    case'Transport':
+        BodyParts =[MOVE,TOUGH,MOVE];
+    break;
+
     case'Build':
         BodyParts =[CARRY,MOVE,WORK,CARRY];
     break;
@@ -70,6 +83,8 @@ function CreepTypeInit(Creepy,BodySize){
     case'Work':
         if(BodySize > 3){
             BodyParts =[WORK,MOVE,WORK,WORK,CARRY,CARRY];
+        }else if(BodySize > 5){
+            BodyParts =[WORK,MOVE,WORK,WORK,MOVE,MOVE];
         }else{
             BodyParts =[WORK,MOVE,WORK];
         }
@@ -161,7 +176,7 @@ Build.Layout = function(remainder,AvailableEnergy,BodySize,Type){
 
         if((cost >= target) || (cost >= AvailableEnergy)){
             //Layout.slice(0,Layout.length);
-            //Layout.pop();
+            Layout.pop();
             console.log('Cost:'+cost+' Layout: '+Layout+' Target:'+target+' Remainder:'+AvailableEnergy);
             stop = true;
         }

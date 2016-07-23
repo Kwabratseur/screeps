@@ -11,7 +11,7 @@ var MonMan = require('job.monman');
 
 profiler.enable();
 module.exports.loop = function () {
-    
+
     profiler.wrap(function() {
     var LogLength = 20;
     //var MyRoom = Game.spawns.Spawn1.room.name;
@@ -26,16 +26,18 @@ module.exports.loop = function () {
     var oneLoop = false;
     var twoLoop = false;
 
-    
+    //Mem.initWarband('Light','test','test','Offensive',['henk','piet','fred'],1,2,3,4,5,6);
+    //MonMan.MonitorWarbands();
+
     if(Memory.SpawnActivity == undefined){
         Memory.SpawnActivity = [];
     }
-    
+
     if(Memory.SpawnActivityLt == undefined){
         Memory.SpawnActivityLt = [];
     }
 
-    
+
     if(Memory.Spawning){
         var length = Memory.SpawnActivity.unshift(1);
     }else{
@@ -43,36 +45,36 @@ module.exports.loop = function () {
     }
 
     if(Memory.SpawnActivity.length > 2999){
-        Memory.SpawnActivity.shift();
+        Memory.SpawnActivity.pop();
     }
-    
+
     if(Memory.SpawnActivityLt.length > 99){
-        Memory.SpawnActivityLt.shift();
+        Memory.SpawnActivityLt.pop();
     }
-    
+
     var SpawnActivity = 0;
     for(i in Memory.SpawnActivity){
         if(Memory.SpawnActivity[i] == 1){
             SpawnActivity += 1;
         }
     }
-    
-    Memory.SpawnActivityLt.push((SpawnActivity/length)*100);
-    
+
+    Memory.SpawnActivityLt.unshift((SpawnActivity/length)*100);
+
     if((Memory.tenCounter == undefined )|| (Memory.tenCounter < Game.time)){ //10 ticks counter
         console.log('SpawnActivity 100 ticks ago: '+Memory.SpawnActivityLt[Memory.SpawnActivityLt.length - 1]+'%, Spawnactivity Now: '+Memory.SpawnActivityLt[0]+'%');
         Memory.tenCounter = Game.time + 10;
         MonMan.TerritoryMonitor(false); //if set to true, expansion code will be active.
         MonMan.SpawnCreep();
     }
-    
+
     if((Memory.fiftyCounter == undefined) || (Memory.fiftyCounter < Game.time)){ //50 ticks counter
         Memory.fiftyCounter = Game.time + 50;
         if((Memory.failedSpawn == undefined) || (Memory.failedSpawn > 0)){
           Memory.failedSpawn = 0;
         }
     }
-    
+
     if((Memory.hourCounter == undefined) || (Memory.hourCounter < Game.time)){ //hour counter
         Memory.hourCounter = Game.time + (3600/2.5);
     }
@@ -287,7 +289,9 @@ module.exports.loop = function () {
 
 
         var hostiles = 0;//Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-
+        if(hostiles && Memory.Warband.flag != Game.rooms[MyRoom]){
+          MonMan.Warband('Light',MyRoom,'Defensive');
+        }
         var healer = Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS, {  // <-----------------------that's how we find stuff in the room, check code for occurance.
                         filter: function(object) {
                             return object.getActiveBodyparts(HEAL) != 0;
@@ -320,6 +324,7 @@ module.exports.loop = function () {
             for(var id in towers){
                 var tower = towers[id];
                     if(hostiles) {
+
                         tower.attack(hostiles);
                     }
             }
@@ -375,7 +380,7 @@ module.exports.loop = function () {
         console.log('Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps));
         console.log('TickTime: '+Game.time+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
     }
-    
+
 
 
     //if(TargetRoom.room != undefined && TargetRoom.room.controller.reservation != undefined && TargetRoom.room.controller.reservation.username == 'Kwabratseur'){
@@ -384,8 +389,7 @@ module.exports.loop = function () {
     });
     //Game.profiler.profile(10);
      // Run Stats collection
-        
+
 
 
 }
-
