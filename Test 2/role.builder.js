@@ -9,10 +9,12 @@ var roleBuilder = {
 
         if(creep.memory.building == undefined){
           creep.memory.building = true;
+          
         }
 	    if(creep.memory.building && creep.carry.energy == 0) {
           creep.memory.destRoom = creep.memory.roomFrom
           creep.memory.building = false;
+          creep.say('Bye mates!', true);
 	    }
 	    if(!creep.memory.building && creep.carry.energy == creep.carryCapacity) {
           creep.memory.destRoom = creep.memory.roomTo;
@@ -24,8 +26,11 @@ var roleBuilder = {
 	    if(creep.memory.building) {
 
             if(Jobs[creep.memory.jobs[0]](creep)) {
+                //console.log(creep.name+' Executing '+creep.memory.jobs[0]);
             }else if(Jobs[creep.memory.jobs[1]](creep)){
-	          }else if(Jobs[creep.memory.jobs[2]](creep)){
+                //console.log(creep.name+' Executing '+creep.memory.jobs[1]);
+	        }else if(Jobs[creep.memory.jobs[2]](creep)){
+	            //console.log(creep.name+' Executing '+creep.memory.jobs[2]);
             }
     }else{
 	        if(Game.flags.Dismantle != undefined && No == 0){

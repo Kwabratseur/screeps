@@ -43,6 +43,7 @@ jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Wil
     var linkSend = creep.pos.findInRange(Links, 2)[0];
     if(linkSend != undefined){
         if(creep.carry.energy == creep.carryCapacity){
+            creep.say('The goat has been milked',true);
             if(creep.transfer(linkSend, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
             }else{
                 Moveto.move(creep,linkSend);
@@ -50,13 +51,18 @@ jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Wil
         }
     }else{
         creep.drop(RESOURCE_ENERGY);
+        if((Game.time % 2)==0){
+            creep.say('OM',true);
+        }else{
+            creep.say('NOM',true);
+        }
     }
   }
 }
 
 jobs.Build = function(creep){
   var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-  if(targets.length) {
+  if(targets.length > 0) {
       if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
           Moveto.move(creep,targets[0]);
 
@@ -74,10 +80,10 @@ jobs.Repair = function(creep){
   var containers = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Containers);
   var towers = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Towers);
   var Spawns = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Spawns);
-  var damagedStructures = walls.concat(ramparts,containers);
-  var structHp = Math.pow((10-creep.room.controller.level),(10-creep.room.controller.level)/2)
-  var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < structure.hitsMax/structHp); });
-  var damagedStructures = damagedStructures.concat(roads,towers,Spawns)
+  var damagedStructures = walls.concat(ramparts);
+  var structHp = Math.pow((12-creep.room.controller.level),(12-creep.room.controller.level)/2)
+  var damagedStructures = _.filter(damagedStructures, function(structure){return (structure != null && structure.hits < structure.hitsMax/structHp); });
+  var damagedStructures = _.filter(damagedStructures.concat(roads,towers,Spawns,containers), function(structure){return (structure.hits != structure.hitsMax); });
   var numberDamaged = damagedStructures.length;
   var ClosestDamagedStructure = creep.pos.findClosestByRange(damagedStructures);
 
@@ -87,11 +93,19 @@ jobs.Repair = function(creep){
                     c = i;
                 }
             }
-  if(numberDamaged > 10){
-      if(creep.repair(damagedStructures[c]) == ERR_NOT_IN_RANGE) {
-          Moveto.move(creep,damagedStructures[c]);
-
+  if(numberDamaged > 0){
+      
+      if(creep.repair(ClosestDamagedStructure) == ERR_NOT_IN_RANGE) {
+          Moveto.move(creep,ClosestDamagedStructure);
       }
+      if(ClosestDamagedStructure.hits < 6000){
+          creep.say(ClosestDamagedStructure.hits, true);
+      }else{
+          creep.say(ClosestDamagedStructure.hitsMax/structHp, true);
+      }
+      
+      //console.log(damagedStructures[c].structureType+' Will be repaired to: '+(damagedStructures[c].hitsMax/structHp)+', current HP: '+damagedStructures[c].hits);
+      //console.log(creep.repair(ClosestDamagedStructure));
       return true;
       }else{
         return false;
@@ -99,6 +113,7 @@ jobs.Repair = function(creep){
 }
 
 jobs.Upgrade = function(creep){
+    //console.log(creep);
   if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE){
       Moveto.move(creep,creep.room.controller);
   }
@@ -110,6 +125,7 @@ jobs.Attack = function(creep){
   var hostileBuildings = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES);
   if(creep.getActiveBodyparts(ATTACK) != 0){
     if(hostiles != undefined){
+        creep.say('I see you ',true);
         if(creep.attack(hostiles) == ERR_NOT_IN_RANGE) {
             Moveto.move(creep,hostiles, {reusePath: 50});
         }
@@ -159,6 +175,7 @@ jobs.EmptyLink = function(creep){
       var Target = linksend.pos.findInRange(FIND_MY_STRUCTURES, 2)[0]
       if(link != undefined && link.energy > 0){
           if(creep.carry.energy == 0){ // if creep is empty
+              creep.say('The egg is cracked',true);
               if(link.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ storage
                   Moveto.move(creep,link);
               }

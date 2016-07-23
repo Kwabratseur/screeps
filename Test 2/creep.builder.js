@@ -11,13 +11,12 @@ function CreepType(Creepy,n,b,c){
 
     case'Build':
         if(c == 0){ BodyPart = CARRY; }
-        if(c == 1 && (n % 3) == 1){ BodyPart = MOVE; } // this one will be added twice in a row of 9
-        if(c == 2){ BodyPart = WORK; }
+        if(c == 1 && b == 0 ){ BodyPart = MOVE; } // this one will be added twice in a row of 9
+        if(c == 2 && b == 0){ BodyPart = WORK; }
     break;
 
     case'Work':
-        if(b == 0){ BodyPart = WORK; }
-        if(b == 1 && (n % 2) == 1){ BodyPart = MOVE; } // this one will be added twice in a row of 9
+        BodyPart = WORK;
     break;
 
     case'Claim':

@@ -51,7 +51,15 @@ Transfer.FilterObjects = function(creep,MyRoom,object,resource,n){
             if(object == 'Extensions' || object == 'Spawns' || object == 'Links' || object == 'Towers'){
                 temp = _.filter(temp1, function(structure){return structure.energy > 0; });
             }else{
-                temp = _.filter(temp1, function(structure){return structure.store[RESOURCE_ENERGY] > 50; });
+                temp = _.filter(temp1, function(structure){return structure.store[RESOURCE_ENERGY] > creep.carryCapacity; });
+                temp.sort((a, b)=>a.store[RESOURCE_ENERGY]-b.store[RESOURCE_ENERGY]);
+                //if(temp[0].store[RESOURCE_ENERGY] > temp[temp.length - 1].store[RESOURCE_ENERGY]*0.5){
+                //    temp = temp[0];
+                //}else{
+                //    temp = temp[temp.length - 1];
+                //}
+                
+                //return temp;
             }
         break;
     }

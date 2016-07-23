@@ -7,13 +7,17 @@ var Transfer = require('action.transfer');
 var CreepBuilder = require('creep.builder');
 var MonMan = require('job.monman');
 
+
+
 profiler.enable();
 module.exports.loop = function () {
+    
     profiler.wrap(function() {
     var LogLength = 20;
     //var MyRoom = Game.spawns.Spawn1.room.name;
-
+    var NumberOfCreeps = 0;
     for(var name in Memory.creeps) {
+        NumberOfCreeps += 1;
         if(!Game.creeps[name]) {
             delete Memory.creeps[name];
         }
@@ -22,17 +26,53 @@ module.exports.loop = function () {
     var oneLoop = false;
     var twoLoop = false;
 
+    
+    if(Memory.SpawnActivity == undefined){
+        Memory.SpawnActivity = [];
+    }
+    
+    if(Memory.SpawnActivityLt == undefined){
+        Memory.SpawnActivityLt = [];
+    }
+
+    
+    if(Memory.Spawning){
+        var length = Memory.SpawnActivity.unshift(1);
+    }else{
+        var length = Memory.SpawnActivity.unshift(0);
+    }
+
+    if(Memory.SpawnActivity.length > 2999){
+        Memory.SpawnActivity.shift();
+    }
+    
+    if(Memory.SpawnActivityLt.length > 99){
+        Memory.SpawnActivityLt.shift();
+    }
+    
+    var SpawnActivity = 0;
+    for(i in Memory.SpawnActivity){
+        if(Memory.SpawnActivity[i] == 1){
+            SpawnActivity += 1;
+        }
+    }
+    
+    Memory.SpawnActivityLt.push((SpawnActivity/length)*100);
+    
     if((Memory.tenCounter == undefined )|| (Memory.tenCounter < Game.time)){ //10 ticks counter
+        console.log('SpawnActivity 100 ticks ago: '+Memory.SpawnActivityLt[Memory.SpawnActivityLt.length - 1]+'%, Spawnactivity Now: '+Memory.SpawnActivityLt[0]+'%');
         Memory.tenCounter = Game.time + 10;
-        MonMan.TerritoryMonitor();
+        MonMan.TerritoryMonitor(false); //if set to true, expansion code will be active.
         MonMan.SpawnCreep();
     }
+    
     if((Memory.fiftyCounter == undefined) || (Memory.fiftyCounter < Game.time)){ //50 ticks counter
         Memory.fiftyCounter = Game.time + 50;
         if((Memory.failedSpawn == undefined) || (Memory.failedSpawn > 0)){
           Memory.failedSpawn = 0;
         }
     }
+    
     if((Memory.hourCounter == undefined) || (Memory.hourCounter < Game.time)){ //hour counter
         Memory.hourCounter = Game.time + (3600/2.5);
     }
@@ -264,6 +304,7 @@ module.exports.loop = function () {
         MonMan.monitor(MyRoom);
 
         if(towers.length > 0){
+            /*
             var damagedStructures = walls.concat(ramparts,containers);
             var structHp = Math.pow((10-Game.rooms[MyRoom].controller.level),(10-Game.rooms[MyRoom].controller.level)/2)
 
@@ -275,13 +316,9 @@ module.exports.loop = function () {
                 if(damagedStructures[i].hits < damagedStructures[c].hits){
                     c = i;
                 }
-            }
+            }*/
             for(var id in towers){
                 var tower = towers[id];
-                    var closestDamagedStructure = tower.pos.findClosestByRange(damagedStructures);
-                    if(closestDamagedStructure && !hostiles) {
-                        tower.repair(damagedStructures[c]);
-                    }
                     if(hostiles) {
                         tower.attack(hostiles);
                     }
@@ -330,12 +367,15 @@ module.exports.loop = function () {
     }
     var shortage = MainLoop-10;
     if(shortage > 0){
-        var message = 'CPU usage-limit='+shortage+'     - CPU:'+MainLoop+'  ; Bucket:'+Game.cpu.bucket+'; TickLimit:'+Game.cpu.tickLimit+' ;happened at tick: '+Game.time;
+        var message = 'CPU usage-limit='+shortage+'  ; Bucket:'+Game.cpu.bucket+' ;happened at tick: '+Game.time;
+        console.log('Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps));
         console.log(message);
         Game.notify(message, 720);
     }else{
-        console.log('TickTime: '+Game.time+' ;Used CPU: '+MainLoop+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
+        console.log('Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps));
+        console.log('TickTime: '+Game.time+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
     }
+    
 
 
     //if(TargetRoom.room != undefined && TargetRoom.room.controller.reservation != undefined && TargetRoom.room.controller.reservation.username == 'Kwabratseur'){
@@ -343,4 +383,9 @@ module.exports.loop = function () {
     }
     });
     //Game.profiler.profile(10);
+     // Run Stats collection
+        
+
+
 }
+

@@ -9,6 +9,9 @@ var roleFarmer = {
 	      }else{
             creep.memory.destRoom = creep.memory.roomTo;
             Jobs[creep.memory.jobs[0]](creep);
+              if(creep.pos.findInRange(FIND_MY_CREEPS,1).length > 1){
+                  creep.say('Hi mate',true);
+              }
         }
   }
 };

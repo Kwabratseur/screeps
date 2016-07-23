@@ -13,10 +13,10 @@ var jobDistributor = ['GetEnergy','FillStructures']; //dest == to -> Emon, dest 
 //harvester jobs
 var jobMiner = ['MineEnergy']; //dest == to -> Miner, dest != to -> external room Miner
 //Miner jobs
-var jobWorker = ['Build','Repair','Upgrade','Attack','GetEnergy'];
+var jobWorker = ['Build','Upgrade','Repair','Attack','GetEnergy'];
 var jobExtWorker = ['Build','Repair','Upgrade','Attack','GatherEnergy']; // set dest , To, From to a non-owned room with this job array to give it the old ExternalBuilder behaviour
 var jobUpgrader = ['Upgrade','Build','Repair','Attack','GetEnergy'];
-var jobFixer = ['Repair','Upgrade','Build','Attack','GetEnergy'];
+var jobFixer = ['Repair','Build','Upgrade','Attack','GetEnergy'];
 //worker jobs
 var jobArmy = ['Attack'];
 //army jobs
@@ -32,6 +32,7 @@ MonMan.InQueue = function(MyRoom,Role){
       }
     }
   }
+  //console.log(Role+creepInQueue);
   return creepInQueue;
 }else{
   return 0;
@@ -69,7 +70,7 @@ MonMan.monitor = function(MyRoom){
 
     var FarmDis = 1; //fill in some standard distribution numbers upon creation, fit for starting room.
     var TransDis = 1;
-    var WorkDis = 0.5;
+    var WorkDis = 0.3;
     var ArmyDis = 1; //manage this further with manager.
     //var NeededCreeps = Memory.rooms[MyRoom].creepInfo.Farmers
 
@@ -83,13 +84,18 @@ MonMan.monitor = function(MyRoom){
     var CarryParts = 0;
     var TravelLoss = 0;
     if(Game.rooms[MyRoom].controller.level < 3){
-      workers = 4;
+      if(EnergySpawn > 500 && Memory.SpawnActivityLt[0] < 50){
+          workers = 7
+      }else{
+          workers = 5;
+      }
+
       transporters = 2;
       if(hostiles){
         army = 2;
       }
     }else if(Game.rooms[MyRoom].controller.level < 4){
-        workers = 2; //2 workers if low CL
+        workers = 6; //4 workers if low CL
         army = 0; // no stationary army if low CL
         if(hostiles){
           army = 2;
@@ -108,7 +114,7 @@ MonMan.monitor = function(MyRoom){
       TravelLoss += (sources[i].pos.getRangeTo(Spawns[0])+1)*2;
       farmers +=1;//farmers are determined by amount of sources
     }
-    var travelconst = 30;
+    var travelconst = 20;
     if(TravelLoss > 200){
       travelconst = 70;
     }
@@ -132,31 +138,33 @@ MonMan.monitor = function(MyRoom){
     workerInQueue = MonMan.InQueue(MyRoom,'worker');
     harvesterInQueue = MonMan.InQueue(MyRoom,'harvester');;
     armyInQueue = MonMan.InQueue(MyRoom,'army');;
-
-    if((farmersPresent.length + farmerInQueue) < farmers ){
-      console.log('adding farmer to queue');
-      Mem.AddtoQueue(0.1,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,Game.rooms[MyRoom].energyAvailable,3,"Work"),'farmer',MyRoom,MyRoom,MyRoom,MyRoom,jobMiner);
+    //console.log(Memory.Spawning == false);
+    //console.log(CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacity,Game.rooms[MyRoom].energyCapacity,20,"Build"));
+    if(Memory.Spawning == false){
+        if((farmersPresent.length + farmerInQueue) < farmers ){
+          console.log('adding farmer to queue');
+          Mem.AddtoQueue(0.1,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,Game.rooms[MyRoom].energyCapacityAvailable,3,"Work"),'farmer',MyRoom,MyRoom,MyRoom,MyRoom,jobMiner);
+        }
+        if((HarvestersPresent.length + harvesterInQueue) < transporters ){
+          var priority = 0.3;
+          if(HarvestersPresent.length + harvesterInQueue == 0){
+            priority = 0;
+          }
+          Mem.AddtoQueue(priority,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,Game.rooms[MyRoom].energyCapacityAvailable,30,"Transport"),'harvester',MyRoom,MyRoom,MyRoom,MyRoom,jobGatherer);
+            console.log('adding harvester to queue');
+        }
+        if((WorkersPresent.length + workerInQueue) < workers ){
+          Mem.AddtoQueue(0.5,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,Game.rooms[MyRoom].energyAvailable,20,"Build"),'worker',MyRoom,MyRoom,MyRoom,MyRoom,jobWorker);
+            console.log('adding worker to queue');
+        }
+        if((ArmyPresent.length + armyInQueue) < army ){
+          Mem.AddtoQueue(0.8,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/1.5,Game.rooms[MyRoom].energyAvailable,15,"Army"),'army',MyRoom,MyRoom,MyRoom,MyRoom,jobArmy);
+            console.log('adding harvester to queue');
+        }
+        if(Memory.rooms[MyRoom].creepInfo == undefined || RoomCreeps.length < (farmers+transporters+workers+army)){
+          Mem.setroomcreep(MyRoom,farmers,transporters,workers,army,FarmDis,TransDis,WorkDis,ArmyDis);
+        }
     }
-    if((HarvestersPresent.length + harvesterInQueue) < transporters ){
-      var priority = 0.3;
-      if(HarvestersPresent.length + harvesterInQueue == 0){
-        priority = 0;
-      }
-      Mem.AddtoQueue(priority,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable,Game.rooms[MyRoom].energyCapacityAvailable,(CarryParts-MinCarryParts),"Transport"),'harvester',MyRoom,MyRoom,MyRoom,MyRoom,jobGatherer);
-        console.log('adding harvester to queue');
-    }
-    if((WorkersPresent.length + workerInQueue) < workers ){
-      Mem.AddtoQueue(0.5,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,Game.rooms[MyRoom].energyAvailable,20,"Build"),'worker',MyRoom,MyRoom,MyRoom,MyRoom,jobWorker);
-        console.log('adding worker to queue');
-    }
-    if((ArmyPresent.length + armyInQueue) < army ){
-      Mem.AddtoQueue(0.8,CreepBuilder.Layout(Game.rooms[MyRoom].energyCapacityAvailable/2,Game.rooms[MyRoom].energyAvailable,15,"Army"),'army',MyRoom,MyRoom,MyRoom,MyRoom,jobArmy);
-        console.log('adding harvester to queue');
-    }
-    if(Memory.rooms[MyRoom].creepInfo == undefined || RoomCreeps.length < (farmers+transporters+workers+army)){
-      Mem.setroomcreep(MyRoom,farmers,transporters,workers,army,FarmDis,TransDis,WorkDis,ArmyDis);
-    }
-
     //console.log('Room: '+MyRoom+'. Farmers: '+farmers+' ,Transport: '+transporters+' ,Workers: '+workers+' ,Army: '+army+'. Ticks for Pickup and drop: '+TravelLoss+' ,Energy produced per cycle: '+EnergyCycle+' ,Minimum inventory needed: '+MinCarryParts);
 }
 
@@ -167,13 +175,20 @@ MonMan.SpawnCreep = function(){
   var MyRoom = [];
   var CreeptoSpawn = Memory.SpawnQueue.shift();
 
+
+
   for(var name in Game.spawns){ // Try to include All code except for FarmRoom code in this loop. Maybe multiple rooms can be controlled in this way.
     if(Game.spawns[name].spawning == null){ //only take inactive spawns into account!
       MyRoom.unshift(Game.spawns[name].room.name);    //Then offcourse make everything depend from variable MyRoom(mostly the case)
       availableEnergies.unshift(Game.rooms[MyRoom].energyAvailable);
       FillDegree.unshift(Game.rooms[MyRoom].energyAvailable/Game.rooms[MyRoom].energyCapacityAvailable);
-      console.log(Game.spawns[name].spawning)
+      Memory.Spawning = false;
+      //console.log(Game.spawns[name].spawning)
+    }else{
+        Memory.Spawning = true;
     }
+
+
   }
   var c = 0;
   var j = 0;
@@ -193,25 +208,34 @@ MonMan.SpawnCreep = function(){
     if(MyRoom.length > 0){
         newName = Mem.run(Memory.rooms[MyRoom[j]].RoomInfo.Spawns)[0].createCreep(body, undefined, {role: CreeptoSpawn[2],destRoom: CreeptoSpawn[3],roomTo: CreeptoSpawn[4],roomFrom: CreeptoSpawn[5],flag: CreeptoSpawn[6],jobs: CreeptoSpawn[7]});
     }
-    if(newName > 0){
-      console.log('Spawning: '+CreeptoSpawn+' at '+MyRoom[j]);
+
+    if(newName == -4){
+        Memory.Spawning = true;
     }
+
     if(newName == -6){
       Memory.failedSpawn += 1;
       Memory.WithdrawLight = false; // if this is set to false, no energy may be picked up at any extension or spawn.
-      if(Memory.failedSpawn > 4 && CreeptoSpawn[1].length > 3 && CreepBuilder.Cost(body) > 300){
+      if(Memory.failedSpawn > 3 && CreeptoSpawn[1].length > 3 && CreepBuilder.Cost(body) > 300){
         CreeptoSpawn[1].shift();
       }
-    }else{
-      Memory.WithdrawLight = true;
-    }if(newName == -10){//purges corrupt creeps from memory
+    }
+    if(newName == -10){//purges corrupt creeps from memory
         console.log('Corrupt creep body: '+CreeptoSpawn[1]+', Purging SpawnQueue.');
     }else if(newName < 0){
       if(CreeptoSpawn != undefined){
         Memory.SpawnQueue.unshift(CreeptoSpawn);
         console.log('Tried to spawn: '+CreeptoSpawn[2]+' but theres not enough energy:'+availableEnergies[j]+'. One bodypart will be removed.');
       }
+    }else{
+        console.log('Spawning: '+CreeptoSpawn+' at '+MyRoom[j]);
+        Memory.WithdrawLight = true;
+        Memory.Spawning = true;
+
     }
+  }else{
+        console.log('Nothing to spawn.');
+        Memory.WithdrawLight = true;
   }
 }
 
@@ -247,20 +271,25 @@ MonMan.manager = function(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources)
 
   if(Sites.length > 5){
     Memory.rooms[MyRoom].creepInfo.Workers[1] = 0.8;//80% worker if more than 5 buildingsites are available
-  }if(Game.rooms[MyRoom].controller.ticksToDowngrade < 200){
+  }else{
+    Memory.rooms[MyRoom].creepInfo.Workers[1] = 0.3;
+  }
+  if(Game.rooms[MyRoom].controller.ticksToDowngrade < 200){
     Memory.rooms[MyRoom].creepInfo.Workers[1] = 0.1;
     console.log('Upgrading controller to prevent downgrade!');
   }
   var Dgatherer = Math.round(Memory.rooms[MyRoom].creepInfo.Transporters[0]*Memory.rooms[MyRoom].creepInfo.Transporters[1]);
   var Ddistributor = Memory.rooms[MyRoom].creepInfo.Transporters[0]-Dgatherer;
   var Dworker = Math.round(Memory.rooms[MyRoom].creepInfo.Workers[0]*Memory.rooms[MyRoom].creepInfo.Workers[1]);
-  var Dupgrader = Math.round(0.5*(Memory.rooms[MyRoom].creepInfo.Workers[0])); //30% of remainder is upgrader
-  //console.log('work'+Dworker+'upgr'+Dupgrader);
-  if((Memory.rooms[MyRoom].creepInfo.Workers[0] - (Dupgrader+Dworker)) > 0){
+  var Dupgrader = Math.round(0.3*(Memory.rooms[MyRoom].creepInfo.Workers[0])); //30% of remainder is upgrader
+
+
+  if(Memory.rooms[MyRoom].creepInfo.Workers[0] > (Dupgrader+Dworker)){
     var Dfixer = Memory.rooms[MyRoom].creepInfo.Workers[0] - (Dupgrader+Dworker);// remaining 70% is fixer, repairs stuff.
   }else{
-    Dfixer = 0;
+    var Dfixer = 0;
   }
+  //console.log('work'+Dworker+'upgr'+Dupgrader+'fixr'+Dfixer);
 
 
  //manager will setup creep jobs and see if there is a possible better distribution
@@ -297,9 +326,9 @@ MonMan.manager = function(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources)
                 if(!creep.memory.sourceID){
                     var c = 0;
                   for(var i in sources){
-                    if(sources[i].pos.findInRange(FIND_MY_CREEPS,2).length < sources[c].pos.findInRange(FIND_MY_CREEPS,2).length){
+                    if(sources[c].pos.findInRange(FIND_MY_CREEPS,1).length > sources[i].pos.findInRange(FIND_MY_CREEPS,1).length){
                       c = i;
-                      
+
                     }
                   }
                 creep.memory.sourceID = sources[c].id;
@@ -322,7 +351,7 @@ MonMan.manager = function(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources)
           }
       }
   }
-  if(((Dgatherer >= gatherer && Ddistributor >= distributor) || Dworker != worker)&& Memory.tenCounter == Game.time){
+  if(((Dgatherer >= gatherer && Ddistributor >= distributor) || Dworker != worker || Dfixer != fixer)&& Memory.tenCounter == Game.time){
     MonMan.Redistribute(MyRoom,Dgatherer,Ddistributor,Dworker,Dupgrader,Dfixer);
     console.log('Desired Gatherers:'+Dgatherer+', Distributors:'+Ddistributor+', Workers:'+Dworker+', Upgraders:'+Dupgrader+', Fixers:'+Dfixer);
     console.log('Total Gatherers:'+gatherer+', Distributors:'+distributor+', Workers:'+worker+', Upgraders:'+upgrader+', Fixers:'+fixer);
@@ -375,14 +404,13 @@ MonMan.EditDestination = function(RoomTo,Amount,Role){
 }
 
 
-MonMan.TerritoryMonitor = function(){
+MonMan.TerritoryMonitor = function(Expand){
   //console.log(Memory.roomdb);
   //add variables for creeps and count them in spawnqueue and in game.creeps.
   //add these values to the array: [rooms[0],false,1,0,0,0,0,0,0,0]     0                     8
   //look at considerTerritory function, already initializes [Territory[i],false,0,0,0,0,0,0,0]).
   // #######################################################Roomname,farmflag,stateflag,farmers, transporters,workers,army, killed amount,PrevAmount.
 
-  //console.log('TerritoryManager is runned');
   var filldegrees = [];
   var energyAvailable = [];
   var StorageSum = 0;
@@ -431,11 +459,11 @@ MonMan.TerritoryMonitor = function(){
   for(var i in Memory.roomdb){
     var rooms = Memory.roomdb[i];
 
-
+    //console.log(rooms);
     //###################### Scoutcode
     if(!rooms[1] && rooms[2] != 2){
     //if room is flagged false and not in red state
-      if(rooms[6] < 1){
+      if((rooms[6] < MonMan.InQueue(rooms[0],'army')) && Expand){
       //if no scouts are dispatched
         rooms[6] += 1;
         if(MonMan.EditDestination(rooms[0],1,'army')){
@@ -671,10 +699,10 @@ MonMan.ConsiderTerritory = function(roomtest){
   for(var i in Territory){
   //
     if(Game.rooms[Territory[i]] != undefined){
-        console.log(Territory[i]);
-        
+        //console.log(Territory[i]);
+
         if(Game.rooms[Territory[i]].controller.owner.username == 'Kwabratseur'){
-            
+
         }else{
             Memory.roomdb.unshift([Territory[i],true,0,0,0,0,0,0,0]); //0 == green, 1 == NPC's, orange 2== player, red. true means it is a farmed tile.
         }
