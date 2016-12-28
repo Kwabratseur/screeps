@@ -33,8 +33,41 @@ function ReturnObjects(object,MyRoom){
 	return temp;
 };
 
+function ReturnExtObjects(object,MyRoom){
+    var temp = null;
+    switch(object) {
+		case 'Containers':
+			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Containers);
+		break;
+		case 'Storages': // call looks like: Transfer.to(creep,creep.room.name,"Storages",RESOURCE_ENERGY,0);
+			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Storages);
+		break;
+		case 'Spawns':
+			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Spawns);
+		break;
+		case 'Extensions':
+			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Extensions);
+		break;
+		case 'Links':
+			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Links);
+		break;
+		case 'Labs':
+			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Labs);
+		break;
+		case 'Towers':
+			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Towers);
+		break;
+	}
+	return temp;
+};
+
 Transfer.FilterObjects = function(creep,MyRoom,object,resource,n){
-    var temp1 = ReturnObjects(object,MyRoom);
+    if((Game.rooms[MyRoom].controller == undefined) || (Game.rooms[MyRoom].controller.owner == undefined)){
+      var temp1 = ReturnExtObjects(object,MyRoom);
+    }else{
+      var temp1 = ReturnObjects(object,MyRoom);
+    }
+
     var temp = null;
     switch(n){
         case 'zero':

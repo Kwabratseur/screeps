@@ -82,7 +82,7 @@ function CreepTypeInit(Creepy,BodySize){
 
     case'Work':
         if(BodySize > 3){
-            BodyParts =[WORK,MOVE,WORK,WORK,CARRY,CARRY];
+            BodyParts =[WORK,MOVE,CARRY,CARRY];
         }else if(BodySize > 5){
             BodyParts =[WORK,MOVE,WORK,WORK,MOVE,MOVE];
         }else{

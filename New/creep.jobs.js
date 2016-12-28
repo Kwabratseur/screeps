@@ -3,17 +3,21 @@ var Transfer = require('action.transfer');
 var Moveto = require('move.to');
 var Mem = require('get.memory');
 
+
+
 jobs.GatherEnergy = function(creep){ // first empty containers, then drops.
     var drops = creep.room.find(FIND_DROPPED_RESOURCES);
+    //console.log(drops[0].energy);
     if(!Transfer.from(creep,creep.room.name,"Containers",RESOURCE_ENERGY,'filled')){
       //console.log('Harvester '+creep.name+' is Transfering energy From Container');
     }
     else if(drops.length>0){
+      //console.log('Harvester '+creep.name+' is Transfering energy From drops');
         Moveto.move(creep,drops[0]);
         creep.pickup(drops[0]);
     }else if(creep.memory.jobs[0] == 'GatherEnergy'){
       if(!Transfer.from(creep,creep.room.name,"Storages",RESOURCE_ENERGY,'zero')){
-        //console.log('Harvester '+creep.name+' is Transfering energy From Container');
+        //console.log('Harvester '+creep.name+' is Transfering energy From Storage');
       }
     }
 }
@@ -57,7 +61,12 @@ jobs.FillStructures = function(creep,buildInfra){ //fill structures
 }
 
 jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Will drop resources in link or container if possible
-  var Containers = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Containers);
+
+  if(Memory.rooms[creep.room.name] == undefined){
+    var Containers = Mem.run(Memory.roomdb[creep.memory.destRoom].RoomInfo.Containers)
+  }else{
+    var Containers = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Containers);
+  }
   var containers = creep.pos.findClosestByRange(Containers);
   if(Containers[0] != undefined && creep.pos != containers.pos && Math.abs(creep.pos.x-containers.pos.x) < 3 && Math.abs(creep.pos.y-containers.pos.y) < 3){
       Moveto.move(creep,containers);
@@ -65,14 +74,25 @@ jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Wil
           Moveto.move(creep,Game.getObjectById(creep.memory.sourceID));
           creep.memory.work += 1;
   }
+  if(creep.harvest(Game.getObjectById(creep.memory.sourceID)) == ERR_NOT_ENOUGH_RESOURCES){
+    creep.memory.work += 1;
+  }
   if(creep.memory.work > 30){
     delete creep.memory.sourceID;
     delete creep.memory.work;
     creep.say('Workless',true);
   }
   else {
-    var Links = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Links);
-    var linkSend = creep.pos.findInRange(Links, 2)[0];
+    if(Memory.rooms[creep.room.name] == undefined){
+      var Links = Mem.run(Memory.roomdb[creep.memory.destRoom].RoomInfo.Links);
+      var linkSend = creep.pos.findInRange(Links, 2)[0];
+      var sources = Mem.run(Memory.roomdb[creep.memory.destRoom].RoomInfo.Sources);
+    }else{
+      var Links = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Links);
+      var linkSend = creep.pos.findInRange(Links, 2)[0];
+      var sources = Mem.run(Memory.rooms[creep.memory.destRoom].RoomInfo.Sources);
+    }
+
     if(linkSend != undefined && creep.carryCapacity != 0){
         if(creep.carry.energy == creep.carryCapacity){
             if(creep.transfer(linkSend, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -89,13 +109,28 @@ jobs.MineEnergy = function(creep){ // mines the sourceID in-memory of creep. Wil
         }
     }
   }
+  try{
+    if(!creep.memory.sourceID){
+        var c = 0;
+      for(var i in sources){
+        if(sources[c].pos.findInRange(FIND_MY_CREEPS,1).length > sources[i].pos.findInRange(FIND_MY_CREEPS,1).length){
+          c = i;
+        }
+      }
+    creep.memory.sourceID = sources[c].id;
+    }
+  }
+  catch(err){
+    console.log('MineError, farmcreeps: '+err);
+  }
+
 }
 
 jobs.Build = function(creep){
   var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
   if(targets.length > 0) {
-      if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-          Moveto.move(creep,targets[0]);
+      if(creep.build(creep.pos.findClosestByRange(targets)) == ERR_NOT_IN_RANGE) {
+          Moveto.move(creep,creep.pos.findClosestByRange(targets));
 
       }
       return true;
@@ -160,8 +195,8 @@ jobs.Retreat = function(creep){
 }
 
 jobs.Attack = function(creep){
-  var hostiles = creep.pos.findClosestByRange(jobs.FindHostile(creep.room));
-  var hostileBuildings = creep.pos.findClosestByRange(jobs.FindHostileStructure(creep.room));
+  var hostiles = creep.pos.findClosestByRange(jobs.FindHostile(creep.room.name));
+  var hostileBuildings = creep.pos.findClosestByRange(jobs.FindHostileStructure(creep.room.name));
   //console.log(hostileBuildings);
   if(creep.getActiveBodyparts(ATTACK) != 0){
     if(hostiles != undefined){
@@ -261,30 +296,35 @@ jobs.War = function(creep){ //All different strategie/tactics should be included
 }
 
 jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensions+spawns. Needs conditional to block picking up.
-  var storages = creep.room.storage;
+  try{
+    var storages = creep.room.storage;
+    var extensions = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Extensions);
+    var spawns = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Spawns);
+    var Sources = extensions.concat(spawns,extensions);
+    var amountFull = extensions.concat(spawns,extensions).length;
+    Sources = _.filter(Sources, function(structure){return (structure.energy != 0); });
+    var Source = creep.pos.findClosestByRange(Sources);
+    var storedenergy = storages.store[RESOURCE_ENERGY]
+      if(storages != undefined && storedenergy > 0){
+              if(amountFull != Sources.length || creep.memory.role == 'worker'){
+                  if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
+                      Moveto.move(creep,storages);
+                 }
+              }
+          else{
+              jobs.EmptyLink(creep);
 
-  var extensions = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Extensions);
-  var spawns = Mem.run(Memory.rooms[creep.room.name].RoomInfo.Spawns);
-
-  var Sources = extensions.concat(spawns,extensions);
-  var amountFull = extensions.concat(spawns,extensions).length;
-  Sources = _.filter(Sources, function(structure){return (structure.energy != 0); });
-  var Source = creep.pos.findClosestByRange(Sources);
-    if(storages != undefined && storages.store[RESOURCE_ENERGY] != 0){
-            if(amountFull != Sources.length || creep.memory.role == 'worker'){
-                if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
-                    Moveto.move(creep,storages);
-               }
-            }
-        else{
-            jobs.EmptyLink(creep);
-
-        }
-    }else if(Memory.WithdrawLight == true && (creep.room.energyAvailable > creep.room.energyCapacityAvailable*0.3)){
-        if(Source.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ extensions, spawns
-            Moveto.move(creep,Source);
-        }
-    }
+          }
+      }else if(Memory.WithdrawLight == true && (creep.room.energyAvailable > creep.room.energyCapacityAvailable*0.3)){
+          if(Source.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ extensions, spawns
+              Moveto.move(creep,Source);
+          }
+      }
+  }
+  catch(err){
+    console.log('Error in job.getEnergy '+err);
+    jobs.GatherEnergy(creep);
+  }
 }
 
 jobs.EmptyLink = function(creep){
@@ -305,6 +345,7 @@ jobs.EmptyLink = function(creep){
             }
           }*/
         }else{
+          //console.log('trying to gather through emptylink');
           jobs.GatherEnergy(creep);
         }
     }

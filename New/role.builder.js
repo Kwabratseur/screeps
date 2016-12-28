@@ -1,14 +1,15 @@
 
 var roleBuilder = {
 
-    run: function(creep,AvailableEnergy,No) {
+    run: function(creep) {
+        try{
         var Moveto = require('move.to');
         var Jobs = require('creep.jobs')
         var BufferThreshold = 0;
 
         if(creep.memory.building == undefined){
           creep.memory.building = true;
-          
+
         }
 	    if(creep.memory.building && creep.carry.energy == 0) {
           creep.memory.destRoom = creep.memory.roomFrom
@@ -32,7 +33,7 @@ var roleBuilder = {
 	            //console.log(creep.name+' Executing '+creep.memory.jobs[2]);
             }
     }else{
-	        if(Game.flags.Dismantle != undefined && No == 0){
+	        if(Game.flags.Dismantle != undefined){
   	            if(creep.pos.inRangeTo(Game.flags.Dismantle,6)){
   	               Jobs[creep.memory.jobs[3]](creep);
 	            }else{
@@ -48,6 +49,10 @@ var roleBuilder = {
 	        }
         }
     }
+  }
+  catch(err){
+    console.log('error in builder: '+err);
+  }
 }};
 module.exports = roleBuilder;
 

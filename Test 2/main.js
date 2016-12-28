@@ -6,7 +6,7 @@ var Mem = require('get.memory');
 var Transfer = require('action.transfer');
 var CreepBuilder = require('creep.builder');
 var MonMan = require('job.monman');
-
+var Jobs = require('creep.jobs');
 
 
 profiler.enable();
@@ -23,11 +23,31 @@ module.exports.loop = function () {
         }
     }
 
+    for(var i in Memory.Warband) {
+      Wb = Memory.Warband[i]
+      for(var j in Wb.Names){
+        var name = Memory.Warband[i].Names.shift();
+        if(!Game.creeps[name]) {
+          console.log("Deleting "+name);
+        }else{
+            Memory.Warband[i].Names.push(name);
+            //console.log(i+' '+name);
+        }
+      }
+    }
     var oneLoop = false;
     var twoLoop = false;
-
+    //MonMan.TacticalSetup('W14N48','W14N48');//works correctly
     //Mem.initWarband('Light','test','test','Offensive',['henk','piet','fred'],1,2,3,4,5,6);
-    //MonMan.MonitorWarbands();
+
+    //MonMan.PrimeTargets(Game.rooms['W14N48'].storage,Memory.Warband[0]);
+    //console.log(Jobs.FindHostile('W14N48'));
+    //console.log(Jobs.FindHostile("W14N48"));<----- replace all FindHostileCreep functions with this function.
+
+    //
+    //MonMan.ManageWarbands();
+
+    //Jobs.FindHostile('W14N48');
 
     if(Memory.SpawnActivity == undefined){
         Memory.SpawnActivity = [];
@@ -64,8 +84,12 @@ module.exports.loop = function () {
     if((Memory.tenCounter == undefined )|| (Memory.tenCounter < Game.time)){ //10 ticks counter
         console.log('SpawnActivity 100 ticks ago: '+Memory.SpawnActivityLt[Memory.SpawnActivityLt.length - 1]+'%, Spawnactivity Now: '+Memory.SpawnActivityLt[0]+'%');
         Memory.tenCounter = Game.time + 10;
+        MonMan.MonitorWarbands();
         MonMan.TerritoryMonitor(false); //if set to true, expansion code will be active.
         MonMan.SpawnCreep();
+        //Mem.Allies('Kwabratseur');
+        //Mem.Allies('Nutcustard');
+        //Mem.Allies('Garland');
     }
 
     if((Memory.fiftyCounter == undefined) || (Memory.fiftyCounter < Game.time)){ //50 ticks counter
@@ -87,7 +111,7 @@ module.exports.loop = function () {
       }
       var CreepState = MonMan.TerritoryManager(rooms,0,0,Sites); //uncomment
       rooms[8] = CreepState[0]; //amount of creeps currently present
-      rooms[7] = CreepState[1]; //amount of killed creeps within x ticks
+      rooms[7] = 0; //amount of killed creeps within x ticks
 
       Memory.roomdb[i] = rooms; //set to memory.
     }
@@ -277,22 +301,31 @@ module.exports.loop = function () {
             }
             if(linkTo != undefined){ //if controller || tower links are defined and empty, prioritize them over the storage link.
                 if(linkController.pos != undefined && linkController.energy == 0){
-                    linkTo = LinkController[0];
+                    linkTo[0] = LinkController[0];
                 }else if(linkTower.pos != undefined && linkTower.energy == 0){
-                    linkTo = linkTower[0];
+                    linkTo[0] = linkTower[0];
                 }
-                if(linkFrom.energy == linkFrom.energyCapacity && linkTo.energy == 0 && linkFrom.cooldown == 0){
-                    linkFrom.transferEnergy(linkTo); //then send the energy
+                if(linkFrom.energy == linkFrom.energyCapacity && linkTo[0].energy == 0 && linkFrom.cooldown == 0){
+                    linkFrom.transferEnergy(linkTo[0]); //then send the energy
                 }
             }
         }
 
 
-        var hostiles = 0;//Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        if(hostiles && Memory.Warband.flag != Game.rooms[MyRoom]){
-          MonMan.Warband('Light',MyRoom,'Defensive');
+        var hostiles = Game.spawns[SpawnName].pos.findClosestByRange(Jobs.FindHostile(MyRoom));
+        if(hostiles){
+          var existingBand = false;
+          for(var i in Memory.Warband){
+            if(Memory.Warband[i].Flag == rooms[0]){
+              existingBand = true;
+            }
+          }
+          if(!existingBand){
+            MonMan.Warband('Light',MyRoom,'Defensive');
+          }
+
         }
-        var healer = Game.spawns[SpawnName].pos.findClosestByRange(FIND_HOSTILE_CREEPS, {  // <-----------------------that's how we find stuff in the room, check code for occurance.
+        var healer = Game.spawns[SpawnName].pos.findClosestByRange(Jobs.FindHostile(MyRoom), {  // <-----------------------that's how we find stuff in the room, check code for occurance.
                         filter: function(object) {
                             return object.getActiveBodyparts(HEAL) != 0;
                         }
@@ -303,30 +336,32 @@ module.exports.loop = function () {
         }
 
 
-
         MonMan.manager(MyRoom,drops,buildInfra,AvailableEnergy,Sites,sources);
         MonMan.monitor(MyRoom);
 
         if(towers.length > 0){
-            /*
-            var damagedStructures = walls.concat(ramparts,containers);
-            var structHp = Math.pow((10-Game.rooms[MyRoom].controller.level),(10-Game.rooms[MyRoom].controller.level)/2)
 
-            var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < structure.hitsMax/structHp); });
-            var damagedStructures = damagedStructures.concat(roads,towers,Game.spawns[SpawnName])
+            var damagedStructures = ramparts;
+            var structHp = Math.pow((11-Game.rooms[MyRoom].controller.level),(11-Game.rooms[MyRoom].controller.level)/2)
 
+            var damagedStructures = _.filter(damagedStructures, function(structure){return (structure.hits < 300000); });
+            //var damagedStructures = damagedStructures.concat(roads,towers,Game.spawns[SpawnName])
+            damagedStructures.concat(containers);
             var c = 0;
             for (i = 0; i < damagedStructures.length; i++){
                 if(damagedStructures[i].hits < damagedStructures[c].hits){
                     c = i;
                 }
-            }*/
+            }
+
             for(var id in towers){
                 var tower = towers[id];
-                    if(hostiles) {
-
-                        tower.attack(hostiles);
-                    }
+                if(damagedStructures[c] && tower.energy > tower.energyCapacity*0.89){
+                  tower.repair(damagedStructures[c]);
+                }
+                if(hostiles) {
+                    tower.attack(hostiles);
+                }
             }
         }
 
@@ -344,7 +379,7 @@ module.exports.loop = function () {
 
     //Game.profiler.email(1800);
     //Game.profiler.profile(10);
-
+    var message = '';
     var MainLoop = Game.cpu.getUsed();
         if(!Memory.CpuStats){
             Memory.CpuStats = {
@@ -355,8 +390,11 @@ module.exports.loop = function () {
         }
 
 
+
+
     if(Memory.CpuStats.TickCounter > LogLength){
-        console.log('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.');
+        message += ' Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.', 720;
+        //console.log('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.');
         Game.notify('Aggregated average :'+Memory.CpuStats.AggregatedAverage+' collected over '+LogLength+' loops.', 720);
         Memory.CpuStats.TickCounter = 0;
         Memory.CpuStats.AggregatedAverage = MainLoop;
@@ -372,15 +410,19 @@ module.exports.loop = function () {
     }
     var shortage = MainLoop-10;
     if(shortage > 0){
-        var message = 'CPU usage-limit='+shortage+'  ; Bucket:'+Game.cpu.bucket+' ;happened at tick: '+Game.time;
-        console.log('Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps));
-        console.log(message);
+        message += ' CPU usage-limit='+shortage+'  ; Bucket:'+Game.cpu.bucket+' ;happened at tick: '+Game.time;
+        //var message = 'CPU usage-limit='+shortage+'  ; Bucket:'+Game.cpu.bucket+' ;happened at tick: '+Game.time;
+
+        //console.log('Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps));
+
         Game.notify(message, 720);
     }else{
-        console.log('Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps));
-        console.log('TickTime: '+Game.time+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
+        message += ' TickTime: '+Game.time+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket;
+        //console.log('Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps));
+        //console.log('TickTime: '+Game.time+' ; CPU to Bucket:'+Math.abs(shortage)+' ; BucketVolume:'+Game.cpu.bucket);
     }
-
+        message += ' Average CPU('+MainLoop+') Usage Per Creep('+NumberOfCreeps+') = '+(MainLoop/NumberOfCreeps);
+        console.log(message);
 
 
     //if(TargetRoom.room != undefined && TargetRoom.room.controller.reservation != undefined && TargetRoom.room.controller.reservation.username == 'Kwabratseur'){
