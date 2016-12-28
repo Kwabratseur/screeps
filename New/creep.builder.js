@@ -367,7 +367,7 @@ Build.AutoQueue = function(MyRooms){
       if((HarvestersPresent[0].length + harvesterInQueue ) < TransportDemand){
         var priority = 0.3;
         if(HarvestersPresent[0].length + harvesterInQueue  == 0){
-          priority = 0.08;
+          priority = 0.12;
           if(farmersPresent[0].length > 0){
             priority = 0.08;
           }
@@ -438,7 +438,7 @@ Build.SpawnCreep = function(){
     }else if(newName < 0){
       if(CreeptoSpawn != undefined){
         Memory.SpawnQueue.unshift(CreeptoSpawn);
-        console.log('Tried to spawn: '+CreeptoSpawn[2]+' but theres not enough energy:'+availableEnergies[j]+'. One bodypart will be removed.');
+        console.log('Tried to spawn: '+CreeptoSpawn[2]+' but theres not enough energy:'+availableEnergies[j]+', creepcost:'+Build.Cost(body)+'. One bodypart will be removed.');
       }
     }else{
         console.log('Spawning: '+CreeptoSpawn+' at '+MyRoom[j]);

@@ -15,7 +15,7 @@ var roleTransporter = {
 	    if(!creep.memory.harvesting && creep.carry.energy == 0) {
           creep.memory.destRoom = creep.memory.roomTo;
 	        creep.memory.harvesting = true;
-	        creep.say(creep.memory.destRoom+'! Energiez!', true);
+	        creep.say('! Energiez!', true);
 	    }
       /*for(var i in Jobs){
         console.log(Jobs[i](creep));

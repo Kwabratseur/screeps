@@ -116,6 +116,6 @@ module.exports.loop = function(){
         //}
     Randfcn.FlagScan();        
     }
-    console.log('------CPU:'+Game.cpu.getUsed()+'-----Per creep:'+(Game.cpu.getUsed()/totalCreeps));
+    console.log('------CPU:'+Game.cpu.getUsed()+'-----Per creep:'+(Game.cpu.getUsed()/totalCreeps)+'----Bucket:'+Game.cpu.bucket);
     }
 }
