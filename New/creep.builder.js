@@ -217,20 +217,22 @@ Build.CreepDemand = function(MyRoom,RCL,SAlt,Hostiles,sources,buffer,spawn,links
 
   var FarmableEnergy = 0;
   var TravelLoss = 0;
+  if(Hostiles){
+    army = 2;
+  }
   if(RCL < 3){
-    transporters = 1;
-    if(Game.rooms[spawn[0].room.name].energyCapacityAvailablee > 500 && SAlt[0] < 50){
+    transporters = 0;
+      //console.log('Room'+MyRoom+'Control level:'+RCL);
+    if(Game.rooms[spawn[0].room.name].energyCapacityAvailable > 500 && SAlt[0] < 50){
+          //console.log('Spawning extra workers, energycap:'+Game.rooms[spawn[0].room.name].energyCapacityAvailable);
         workers = 5;
     }else{
         workers = 3;
     }
 
   }
-  if(Hostiles){
-    army = 2;
-  }
-  else if(RCL < 4){
-      workers = 6; //4 workers if low CL
+  else if((RCL < 4)&&(RCL > 2)){
+      workers = 4; //4 workers if low CL
       army = 0; // no stationary army if low CL
       if(Hostiles){
         army = 2;
@@ -424,7 +426,7 @@ Build.SpawnCreep = function(){
         newName = Mem.run(Memory.rooms[MyRoom[j]].RoomInfo.Spawns)[0].createCreep(body, undefined, {role: CreeptoSpawn[2],destRoom: CreeptoSpawn[3],roomTo: CreeptoSpawn[4],roomFrom: CreeptoSpawn[5],flag: CreeptoSpawn[6],jobs: CreeptoSpawn[7]});
     }
     if(newName == -4){
-        Memory.Spawning = true;
+
     }
     if(newName == -6){
       Memory.failedSpawn += 1;
@@ -443,7 +445,7 @@ Build.SpawnCreep = function(){
     }else{
         console.log('Spawning: '+CreeptoSpawn+' at '+MyRoom[j]);
         Memory.WithdrawLight = true;
-        Memory.Spawning = true;
+
 
     }
   }else{

@@ -161,7 +161,7 @@ jobs.Repair = function(creep){
                 }
             }
   if(numberDamaged > 0){
-      if(damagedStructures[c].hits > 4500){
+      if(damagedStructures[c].hits < 4500){
         if(creep.repair(damagedStructures[c])  == ERR_NOT_IN_RANGE) {
             Moveto.move(creep,damagedStructures[c]);
             creep.say(damagedStructures[c].hits, true);
@@ -304,8 +304,7 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
     var amountFull = extensions.concat(spawns,extensions).length;
     Sources = _.filter(Sources, function(structure){return (structure.energy != 0); });
     var Source = creep.pos.findClosestByRange(Sources);
-    var storedenergy = storages.store[RESOURCE_ENERGY]
-      if(storages != undefined && storedenergy > 0){
+      if(storages != undefined){
               if(amountFull != Sources.length || creep.memory.role == 'worker'){
                   if(storages.transfer(creep,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) { //withdraw @ storage
                       Moveto.move(creep,storages);
@@ -315,7 +314,7 @@ jobs.GetEnergy = function(creep){ //get energy at storage first, then at extensi
               jobs.EmptyLink(creep);
 
           }
-      }else if(Memory.WithdrawLight == true && (creep.room.energyAvailable > creep.room.energyCapacityAvailable*0.3)){
+      }else if(Memory.WithdrawLight == true && (creep.room.energyAvailable > creep.room.energyCapacityAvailable*0.3) && creep.memory.role == 'worker'){
           if(Source.transferEnergy(creep) == ERR_NOT_IN_RANGE) { //withdraw @ extensions, spawns
               Moveto.move(creep,Source);
           }

@@ -40,7 +40,10 @@ module.exports.loop = function(){
         var towers = Mem.run(Memory.rooms[MyRoom].RoomInfo.Towers);
         var containers = Mem.run(Memory.rooms[MyRoom].RoomInfo.Containers);
         var ramparts = Mem.run(Memory.rooms[MyRoom].RoomInfo.Ramparts);
-        
+        //Game.rooms['W17N73'].controller.progressTotal
+        Memory.stats["room." + MyRoom + ".progressTotal"] = Game.rooms[MyRoom].controller.progressTotal;
+        Memory.stats["room." + MyRoom + ".progress"] = Game.rooms[MyRoom].controller.progress;
+        Memory.stats["room." + MyRoom + ".ticksToDowngrade"] = Game.rooms[MyRoom].controller.ticksToDowngrade;
         Towercode.run(MyRoom,towers,ramparts,containers,hostiles);
         
         RoomStat = Cbuilder.CreepDemand(MyRoom,Game.rooms[MyRoom].controller.level,Memory.SpawnActivityLt,hostiles,sources,buffer,spawn,links,true);
@@ -89,7 +92,11 @@ module.exports.loop = function(){
       totalCreeps +=1;
       var creep = Game.creeps[name];
       
-      
+      if(creep.memory.role == 'worker') {
+
+              roleBuilder.run(creep);
+       }
+       
       if(creep.memory.role == 'harvester') {
             roleTransporter.run(creep,AmountHarvMain,false); //last argument:build infrastructure
             AmountHarvMain+=1;
@@ -100,10 +107,7 @@ module.exports.loop = function(){
       if(creep.memory.role == 'farmer') {
           roleFarmer.run(creep);
       }
-      if(creep.memory.role == 'worker') {
 
-              roleBuilder.run(creep);
-       }
        
        if(creep.memory.role == 'army') { // healers can be built with this rolename.
               roleArmy.run(creep);
@@ -116,6 +120,15 @@ module.exports.loop = function(){
         //}
     Randfcn.FlagScan();        
     }
+    Memory.stats.HighestEnergy = Memory.HighestEnergy;
+    Memory.stats.Spawning = Memory.Spawning;
+    Memory.stats.SpawnActivity = Memory.SpawnActivityLt[0];
+    Memory.stats.HighestFillDegree = Memory.BestFilled;
+    Memory.stats.CPU = Game.cpu.getUsed();
+    Memory.stats.TotalCreeps = totalCreeps;
+    Memory.stats.CPUbucket = Game.cpu.bucket;
+    Memory.stats.CPUPC = (Game.cpu.getUsed()/totalCreeps);
+    
     console.log('------CPU:'+Game.cpu.getUsed()+'-----Per creep:'+(Game.cpu.getUsed()/totalCreeps)+'----Bucket:'+Game.cpu.bucket);
     }
 }

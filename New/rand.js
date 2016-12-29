@@ -14,7 +14,9 @@ random.initTimers = function(){
     var ten = false;
     var fifty = false;
     var five = false;
-
+    if(!Memory.stats){
+        Memory.stats = {};
+    }
     if(!Memory.SpawnQueue){
         Memory.SpawnQueue = [];
     }
