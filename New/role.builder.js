@@ -4,7 +4,7 @@ var roleBuilder = {
     run: function(creep) {
         try{
         var Moveto = require('move.to');
-        var Jobs = require('creep.jobs')
+        var jobs = require('creep.jobs')
         var BufferThreshold = 0;
 
         if(creep.memory.building == undefined){
@@ -25,24 +25,24 @@ var roleBuilder = {
         } else{
 	    if(creep.memory.building) {
 
-            if(Jobs[creep.memory.jobs[0]](creep)) {
+            if(jobs[creep.memory.jobs[0]](creep)) {
                 //console.log(creep.name+' Executing '+creep.memory.jobs[0]);
-            }else if(Jobs[creep.memory.jobs[1]](creep)){
+            }else if(jobs[creep.memory.jobs[1]](creep)){
                 //console.log(creep.name+' Executing '+creep.memory.jobs[1]);
-	        }else if(Jobs[creep.memory.jobs[2]](creep)){
+	        }else if(jobs[creep.memory.jobs[2]](creep)){
 	            //console.log(creep.name+' Executing '+creep.memory.jobs[2]);
             }
     }else{
 	        if(Game.flags.Dismantle != undefined){
   	            if(creep.pos.inRangeTo(Game.flags.Dismantle,6)){
-  	               Jobs[creep.memory.jobs[3]](creep);
+  	               jobs[creep.memory.jobs[3]](creep);
 	            }else{
 	                Moveto.move(creep,Game.flags.Dismantle.pos);
 	            }
 	        }else{
 
 	            if(creep.room.storage == undefined || _.sum(creep.room.storage.store) > BufferThreshold) {
-                Jobs[creep.memory.jobs[4]](creep);
+                jobs[creep.memory.jobs[4]](creep);
 	            }else{
 	                Moveto.move(creep,Game.flags[creep.memory.destRoom])
 	            }
@@ -56,6 +56,6 @@ var roleBuilder = {
 }};
 module.exports = roleBuilder;
 
-//jobs: Build, Repair, Attack, GetEnergy (old builder)(shift through Jobs??)
+//jobs: Build, Repair, Attack, GetEnergy (old builder)(shift through jobs??)
 //jobs: Upgrade, GetEnergy (old upgrader)
 //jobs: Build, GatherEnergy + RoomFrom & RoomTo == claimed/non-owned room(old external builder)

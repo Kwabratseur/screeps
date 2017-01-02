@@ -1,30 +1,30 @@
 var Transfer = {};
-var Struct = require('get.memory');
+var Memstructures = require('get.memory');
 var Moveto = require('move.to');
 
 function ReturnObjects(object,MyRoom){
     var temp = null;
     switch(object) {
 		case 'Containers':
-			temp = Struct.run(Memory.rooms[MyRoom].RoomInfo.Containers);
+			temp = Memstructures.run(Memory.rooms[MyRoom].RoomInfo.Containers);
 		break;
 		case 'Storages': // call looks like: Transfer.to(creep,creep.room.name,"Storages",RESOURCE_ENERGY,0);
-			temp = Struct.run(Memory.rooms[MyRoom].RoomInfo.Storages);
+			temp = Memstructures.run(Memory.rooms[MyRoom].RoomInfo.Storages);
 		break;
 		case 'Spawns':
-			temp = Struct.run(Memory.rooms[MyRoom].RoomInfo.Spawns);
+			temp = Memstructures.run(Memory.rooms[MyRoom].RoomInfo.Spawns);
 		break;
 		case 'Extensions':
-			temp = Struct.run(Memory.rooms[MyRoom].RoomInfo.Extensions);
+			temp = Memstructures.run(Memory.rooms[MyRoom].RoomInfo.Extensions);
 		break;
 		case 'Links':
-			temp = Struct.run(Memory.rooms[MyRoom].RoomInfo.Links);
+			temp = Memstructures.run(Memory.rooms[MyRoom].RoomInfo.Links);
 		break;
 		case 'Labs':
-			temp = Struct.run(Memory.rooms[MyRoom].RoomInfo.Labs);
+			temp = Memstructures.run(Memory.rooms[MyRoom].RoomInfo.Labs);
 		break;
 		case 'Towers':
-			temp = Struct.run(Memory.rooms[MyRoom].RoomInfo.Towers);
+			temp = Memstructures.run(Memory.rooms[MyRoom].RoomInfo.Towers);
 		break;
 		case 'Controllers':
 			temp = Game.rooms[MyRoom].controller;
@@ -37,25 +37,25 @@ function ReturnExtObjects(object,MyRoom){
     var temp = null;
     switch(object) {
 		case 'Containers':
-			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Containers);
+			temp = Memstructures.run(Memory.roomdb[MyRoom].RoomInfo.Containers);
 		break;
 		case 'Storages': // call looks like: Transfer.to(creep,creep.room.name,"Storages",RESOURCE_ENERGY,0);
-			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Storages);
+			temp = Memstructures.run(Memory.roomdb[MyRoom].RoomInfo.Storages);
 		break;
 		case 'Spawns':
-			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Spawns);
+			temp = Memstructures.run(Memory.roomdb[MyRoom].RoomInfo.Spawns);
 		break;
 		case 'Extensions':
-			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Extensions);
+			temp = Memstructures.run(Memory.roomdb[MyRoom].RoomInfo.Extensions);
 		break;
 		case 'Links':
-			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Links);
+			temp = Memstructures.run(Memory.roomdb[MyRoom].RoomInfo.Links);
 		break;
 		case 'Labs':
-			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Labs);
+			temp = Memstructures.run(Memory.roomdb[MyRoom].RoomInfo.Labs);
 		break;
 		case 'Towers':
-			temp = Struct.run(Memory.roomdb[MyRoom].RoomInfo.Towers);
+			temp = Memstructures.run(Memory.roomdb[MyRoom].RoomInfo.Towers);
 		break;
 	}
 	return temp;
@@ -77,7 +77,7 @@ Transfer.FilterObjects = function(creep,MyRoom,object,resource,n){
             if(object == 'Extensions' || object == 'Spawns' || object == 'Links'){
                 temp = _.filter(temp1, function(structure){return structure.energy < structure.energyCapacity; });
             }else if(object == 'Towers'){
-                temp = _.filter(temp1, function(structure){return structure.energy < structure.energyCapacity*0.9; });
+                temp = _.filter(temp1, function(structure){return structure.energy < structure.energyCapacity; });
             }else{
                 temp = _.filter(temp1, function(structure){return structure.store[RESOURCE_ENERGY] < structure.storeCapacity; });
             }

@@ -66,11 +66,7 @@ random.initTimers = function(){
         if((Memory.failedSpawn == undefined) || (Memory.failedSpawn > 0)){
           Memory.failedSpawn = 0;
         }
-        for(var i in Memory.creeps) {
-            if(!Game.creeps[i]) {
-                delete Memory.creeps[i];
-            }
-        }
+
         fifty = true;
     }
 
@@ -83,12 +79,49 @@ random.initTimers = function(){
 
 random.FlagScan = function(){
   for(var name in Game.flags){
-    if(Game.rooms[Game.flags[name].pos.roomName]==undefined && Memory.roomdb[name]==undefined && name.length==4){
+    if(Game.rooms[Game.flags[name].pos.roomName]==undefined && Memory.roomdb[name]==undefined && name.length <= 6){
       Rpos = Game.flags[name].pos
       console.log('Adding flag:'+name+'to roomdb with coords: '+Rpos)
       Memory.roomdb[name] = Rpos;
     }
   }
+}
+
+random.ExecCreeps = function(execLim = 0){
+    var roleTransporter = require('role.transporter');
+    var roleFarmer = require('role.farmer');
+    var roleBuilder = require('role.builder');
+    var roleArmy = require('role.army');
+    var AmountHarvMain = 0;
+    var totalCreeps = 0;
+    for(var name in Game.creeps) { //make creeps independent! they determine which source! not in this loop
+      if((execLim == 0) || (execLim != 0 && Game.cpu.getUsed() < execLim)){
+      totalCreeps +=1;
+      var creep = Game.creeps[name];
+      
+      if(creep.memory.role == 'worker') {
+
+              roleBuilder.run(creep);
+       }
+       
+      if(creep.memory.role == 'harvester') {
+            roleTransporter.run(creep,AmountHarvMain,false); //last argument:build infrastructure
+            AmountHarvMain+=1;
+            if(AmountHarvMain == 5){
+                AmountHarvMain =0;
+            }
+        }
+      if(creep.memory.role == 'farmer') {
+          roleFarmer.run(creep);
+      }
+
+       
+       if(creep.memory.role == 'army') { // healers can be built with this rolename.
+              roleArmy.run(creep);
+         }
+    }
+    }
+    return totalCreeps;
 }
 
 module.exports = random;

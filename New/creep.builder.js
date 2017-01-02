@@ -1,5 +1,5 @@
 var Build = {};
-var Mem = require('get.memory');
+var Memstructures = require('get.memory');
 
 //4 types of creeps in 1 role and 2 jobs!
 var jobGatherer = ['GatherEnergy','FillStructures']; //dest == to -> Gatherer, dest != to -> trucker
@@ -213,12 +213,12 @@ Build.CreepDemand = function(MyRoom,RCL,SAlt,Hostiles,sources,buffer,spawn,links
   var farmers = 0;
   var army = 0;
   var FarmParts = 5;
-  var farmersPresent, HarvestersPresent, WorkersPresent, ArmyPresent = Mem.CreepsInRoom(MyRoom);
+  var farmersPresent, HarvestersPresent, WorkersPresent, ArmyPresent = Memstructures.CreepsInRoom(MyRoom);
 
   var FarmableEnergy = 0;
   var TravelLoss = 0;
   if(Hostiles){
-    army = 2;
+    army =  Math.round(1.2*Hostiles);
   }
   if(RCL < 3){
     transporters = 0;
@@ -232,7 +232,7 @@ Build.CreepDemand = function(MyRoom,RCL,SAlt,Hostiles,sources,buffer,spawn,links
 
   }
   else if((RCL < 4)&&(RCL > 2)){
-      workers = 4; //4 workers if low CL
+      workers = 5; //4 workers if low CL
       army = 0; // no stationary army if low CL
       if(Hostiles){
         army = 2;
@@ -253,11 +253,12 @@ Build.CreepDemand = function(MyRoom,RCL,SAlt,Hostiles,sources,buffer,spawn,links
     TravelLoss += (sources[i].pos.getRangeTo(spawn[0])+1)*2;
     farmers +=1;//farmers are determined by amount of sources
   }
-  var travelconst = 20;
+  var travelconst = 25;
   if(TravelLoss > 200){
     travelconst = 70;
   }
   transporters += Math.round(TravelLoss/travelconst);
+  //console.log('Travelloss:'+TravelLoss+', Travelconst:'+travelconst+', transporters: '+transporters);
 
   if(links[0]){
     transporters -= 1;
@@ -274,7 +275,7 @@ Build.CreepDemand = function(MyRoom,RCL,SAlt,Hostiles,sources,buffer,spawn,links
   var EnergyCycle = FarmParts*TravelLoss; // energy produced in one pickup and drop cycle
   var MinCarryParts = Math.round((EnergyCycle)/50)+1; //min carry parts to displace all mined energy+1
   if(NewCreepDemand){
-      Mem.setroomcreep(MyRoom,farmers,transporters,workers,army,1,1,0.3,1)
+      Memstructures.setroomcreep(MyRoom,farmers,transporters,workers,army,1,1,0.3,Math.round(army/2))
   }
   a = [EnergyCycle,MinCarryParts]
   return a;
@@ -287,23 +288,23 @@ Build.ExtCreepDemand = function(MyRoom){
     if(Game.map.isRoomAvailable(MyRoom.roomName)){
       Memory.roomdb[MyRoom.roomName].scout = true;
       //console.log('Roomname:'+MyRoom.roomName+', x-Pos:'+MyRoom.x+', y-Pos:'+MyRoom.y+'. No creep in room And available -> scout ='+Memory.roomdb[MyRoom.roomName].scout);
-      Mem.setroomcreep(MyRoom.roomName,0,0,0,1,1,1,1,1);
+      Memstructures.setroomcreep(MyRoom.roomName,0,0,0,1,1,1,1,0);
     }
 
   }else{ //creep in room?
     Memory.roomdb[MyRoom.roomName].scout = false;
-
+    Memstructures.setExt(MyRoom.roomName);
     if(Memory.roomdb[MyRoom.roomName].RoomInfo == undefined){
       //console.log('Creep arrived in:'+MyRoom.roomName+'. Setting RoomInfo');
-      Mem.setExt(MyRoom.roomName);
+
 
     }else if(Memory.roomdb[MyRoom.roomName].RoomInfo.Hostiles.length == 0){
-      Mem.setroomcreep(MyRoom.roomName,Memory.roomdb[MyRoom.roomName].RoomInfo.Sources.length,Memory.roomdb[MyRoom.roomName].RoomInfo.Sources.length,0,1,1,1,1,1);
+      Memstructures.setroomcreep(MyRoom.roomName,Memory.roomdb[MyRoom.roomName].RoomInfo.Sources.length,Memory.roomdb[MyRoom.roomName].RoomInfo.Sources.length,0,1,1,1,1,1);
       //console.log('Room is safe! no hostiles');
 
     }else if(Memory.roomdb[MyRoom.roomName].RoomInfo.Hostiles.length > 0){
       console.log('HOSTILES!!!! in:'+MyRoom.roomName);
-      Mem.setroomcreep(MyRoom.roomName,0,0,0,2*Memory.roomdb[MyRoom.roomName].RoomInfo.Hostiles.length,1,1,1,1);
+      Memstructures.setroomcreep(MyRoom.roomName,0,0,0,Math.round(1.2*Memory.roomdb[MyRoom.roomName].RoomInfo.Hostiles.length),1,1,1,1,Math.round((1.2*Memory.roomdb[MyRoom.roomName].RoomInfo.Hostiles.length)/2));
     }
     //console.log('Roomname:'+MyRoom.roomName+', x-Pos:'+MyRoom.x+', y-Pos:'+MyRoom.y+'. has a creep!!!');
   } //use creep to scan! and fill memory of room with info, if i'm correct, this will work correct with resetting the db every 50 ticks. because there is a creep when worked.
@@ -323,11 +324,12 @@ Build.AutoQueue = function(MyRooms){
   var FarmDemand = 0;
   var TransportDemand = 0;
   var ArmyDemand = 0;
+  var healDemand = 0;
     //console.log('Undefined test controller:'+(Game.rooms[MyRooms] == undefined));
     //console.log('Owner test controller:'+(Game.rooms[MyRooms].controller.owner.username != 'kwabratseur'));
     //was in for loop before! check if this works!!
-    var PresentCreeps = Mem.CreepsInRoom(MyRooms);
-    if((Game.rooms[MyRooms] == undefined) || (Game.rooms[MyRooms].controller.owner == undefined)){ //rooms which are not formally owned!
+    var PresentCreeps = Memstructures.CreepsInRoom(MyRooms);
+    if((Game.rooms[MyRooms] == undefined) || (Game.rooms[MyRooms].controller.owner == undefined) || (Game.rooms[MyRooms].controller.owner.username != 'Kwabratseur')){ //rooms which are not formally owned!
       var CreepDemand = Memory.roomdb[MyRooms].creepInfo
       var BestRoom = Memory.BestRoom;
       var dest = MyRooms;
@@ -337,7 +339,6 @@ Build.AutoQueue = function(MyRooms){
       var currentEnergy = Memory.HighestEnergy
       var energyCap = currentEnergy/Memory.BestFilled;
     }else{ //rooms which are mine!
-      var PresentCreeps = Mem.CreepsInRoom(MyRooms);
       var energyCap = Game.rooms[MyRooms].energyCapacityAvailable;
       var currentEnergy = Game.rooms[MyRooms].energyAvailable;
       var dest = MyRooms;
@@ -352,19 +353,20 @@ Build.AutoQueue = function(MyRooms){
     FarmDemand = CreepDemand.Farmers[0];
     TransportDemand = CreepDemand.Transporters[0];
     ArmyDemand = CreepDemand.Army[0];
+    healDemand = CreepDemand.Army[1];
     farmersPresent.push(PresentCreeps[1]);
     HarvestersPresent.push(PresentCreeps[2]);
     WorkersPresent.push(PresentCreeps[3]);
     ArmyPresent.push(PresentCreeps[4]);
-    farmerInQueue = Mem.InQueue(MyRooms,'farmer');
-    harvesterInQueue = Mem.InQueue(MyRooms,'harvester');
-    workerInQueue = Mem.InQueue(MyRooms,'worker');
-    armyInQueue = Mem.InQueue(MyRooms,'army');
+    farmerInQueue = Memstructures.InQueue(MyRooms,'farmer');
+    harvesterInQueue = Memstructures.InQueue(MyRooms,'harvester');
+    workerInQueue = Memstructures.InQueue(MyRooms,'worker');
+    armyInQueue = Memstructures.InQueue(MyRooms,'army');
 
   if(Memory.Spawning == 0){
       if((farmersPresent[0].length + farmerInQueue) < FarmDemand){
         console.log('adding farmer to queue for '+MyRooms);                      //role,destination,To,From,Flag,jobarray
-        Mem.AddtoQueue(0.1,Build.Layout(energyCap,energyCap,3,"Work"),'farmer',dest,to,from,flag,jobMiner);
+        Memstructures.AddtoQueue(0.1,Build.Layout(energyCap,energyCap,3,"Work"),'farmer',dest,to,from,flag,jobMiner);
       }
       if((HarvestersPresent[0].length + harvesterInQueue ) < TransportDemand){
         var priority = 0.3;
@@ -374,18 +376,24 @@ Build.AutoQueue = function(MyRooms){
             priority = 0.08;
           }
         }
-        Mem.AddtoQueue(priority,Build.Layout(energyCap,currentEnergy,15,"Transport"),'harvester',dest,to,from,flag,jobGatherer);
+        Memstructures.AddtoQueue(priority,Build.Layout(energyCap,currentEnergy,15,"Transport"),'harvester',dest,to,from,flag,jobGatherer);
           console.log('adding harvester to queue for '+MyRooms);
       }
       if((WorkersPresent[0].length + workerInQueue ) < WorkDemand){
-        Mem.AddtoQueue(0.5,Build.Layout(energyCap,currentEnergy,20,"Build"),'worker',dest,to,from,flag,jobWorker);
+        Memstructures.AddtoQueue(0.5,Build.Layout(energyCap,currentEnergy,20,"Build"),'worker',dest,to,from,flag,jobWorker);
           console.log('adding worker to queue for '+MyRooms);
       }
       if((ArmyPresent[0].length + armyInQueue ) < ArmyDemand){
-        Mem.AddtoQueue(0.8,Build.Layout(energyCap/1.5,currentEnergy,15,"Army"),'army',dest,to,from,flag,jobArmy);
-          console.log('adding Army to queue for '+MyRooms);
+          if((ArmyPresent[0].length+armyInQueue)%2 == 0){
+              Memstructures.AddtoQueue(0.8,Build.Layout(energyCap/1.5,currentEnergy,15,"Heal"),'army',dest,to,from,flag,jobArmy);
+              console.log('adding Army:healer to queue for '+MyRooms);
+          }else{
+              Memstructures.AddtoQueue(0.8,Build.Layout(energyCap/1.5,currentEnergy,15,"Army"),'army',dest,to,from,flag,jobArmy);
+              console.log('adding Army:fighter to queue for '+MyRooms);
+          }
       }
   }
+
 
 }
 
@@ -423,7 +431,7 @@ Build.SpawnCreep = function(){
     //console.log(body);
     var newName = -11;
     if(MyRoom.length > 0){
-        newName = Mem.run(Memory.rooms[MyRoom[j]].RoomInfo.Spawns)[0].createCreep(body, undefined, {role: CreeptoSpawn[2],destRoom: CreeptoSpawn[3],roomTo: CreeptoSpawn[4],roomFrom: CreeptoSpawn[5],flag: CreeptoSpawn[6],jobs: CreeptoSpawn[7]});
+        newName = Memstructures.run(Memory.rooms[MyRoom[j]].RoomInfo.Spawns)[0].createCreep(body, undefined, {role: CreeptoSpawn[2],destRoom: CreeptoSpawn[3],roomTo: CreeptoSpawn[4],roomFrom: CreeptoSpawn[5],flag: CreeptoSpawn[6],jobs: CreeptoSpawn[7]});
     }
     if(newName == -4){
 
@@ -459,7 +467,7 @@ Build.SpawnCreep = function(){
 
 Build.ReconsiderJobs = function(MyRoom,drops,Sites){
   if(Memory.rooms[MyRoom].creepInfo == undefined){
-    Mem.setroomcreep(MyRoom,0,0,0,0,0,0,0,0);
+    Memstructures.setroomcreep(MyRoom,0,0,0,0,0,0,0,0);
   }
   var IDCounter = 0;
   var SourceToggle = 0;

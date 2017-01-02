@@ -37,10 +37,9 @@ var roleClaimer = {
             creep.moveTo(Game.rooms[creep.memory.Home].controller.pos);
         }
     }
-  }
   catch(err){
     console.log('error in claimer: '+err);
   }
-};
+}};
 
 module.exports = roleClaimer;

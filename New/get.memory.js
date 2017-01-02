@@ -67,7 +67,7 @@ Memstructures.CreepsInRoom = function(MyRoom){ //returns living creeps in a room
   var HarvestersPresent = _.filter(RoomCreeps, (creep) => (creep.role == 'harvester'));
   var WorkersPresent = _.filter(RoomCreeps, (creep) => (creep.role == 'worker'));
   var ArmyPresent = _.filter(RoomCreeps, (creep) => (creep.role == 'army'));
-
+  
   return [RoomCreeps,FarmersPresent,HarvestersPresent,WorkersPresent,ArmyPresent];
 }
 
@@ -327,7 +327,7 @@ Memstructures.setExt = function(MyRoom){ //use this function to retrieve buildin
 
             var hostiles = Game.rooms[MyRoom].find(FIND_HOSTILE_CREEPS);
             for (var i in hostiles){
-                hostiless.push(Hostiles[i].id);
+                hostiless.push(hostiles[i].id);
             }
             for(var i in sources){ //iterate through object and stor Id's for Game.getObjedtById();
                 sourcess.push(sources[i].id);
